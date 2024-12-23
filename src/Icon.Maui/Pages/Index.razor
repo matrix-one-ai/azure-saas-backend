@@ -1,0 +1,10 @@
+﻿@page "/"
+@using Icon.Maui.Services.Navigation
+@inherits IconMainLayoutPageComponentBase
+
+@code {
+    protected override void OnInitialized()
+    {
+        Resolve<INavigationService>().NavigateTo(NavigationUrlConsts.User);
+    }
+}
