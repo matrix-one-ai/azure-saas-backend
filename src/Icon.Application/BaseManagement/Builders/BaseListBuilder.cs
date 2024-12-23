@@ -252,7 +252,7 @@ namespace Icon.BaseManagement
                 },
                 Columns = new List<BaseListColumnDto>
                 {
-                    BaseListColumnFactory.GetCharacterNameColumn(),
+                    BaseListColumnFactory.GetCharacterColumn(),
                     BaseListColumnFactory.GetPersonaNameColumn(),
                     BaseListColumnFactory.GetPlatformsColumn(valuePath: "persona.platformNames"),
                     BaseListColumnFactory.GetTwitterRankColumn(),
