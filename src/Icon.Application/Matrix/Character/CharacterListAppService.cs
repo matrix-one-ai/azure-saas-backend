@@ -15,7 +15,7 @@ using Microsoft.AspNetCore.Mvc;
 using Abp.Collections.Extensions;
 using System.Linq.Dynamic.Core;
 
-namespace Icon.Matrix
+namespace Icon.Matrix.Characters
 {
     [AbpAuthorize]
     public partial class CharacterAppService : IconAppServiceBase
@@ -26,18 +26,22 @@ namespace Icon.Matrix
         private readonly IRepository<CharacterTopic, Guid> _characterTopicRepository;
         private readonly IRepository<CharacterPersona, Guid> _characterPersonaRepository;
 
+        private readonly ICharacterManager _characterManager;
+
         public CharacterAppService(
             IRepository<Character, Guid> characterRepository,
             IRepository<CharacterBio, Guid> characterBioRepository,
             IRepository<CharacterPlatform, Guid> characterPlatformRepository,
             IRepository<CharacterTopic, Guid> characterTopicRepository,
-            IRepository<CharacterPersona, Guid> characterPersonaRepository)
+            IRepository<CharacterPersona, Guid> characterPersonaRepository,
+            ICharacterManager characterManager)
         {
             _characterRepository = characterRepository;
             _characterBioRepository = characterBioRepository;
             _characterPlatformRepository = characterPlatformRepository;
             _characterTopicRepository = characterTopicRepository;
             _characterPersonaRepository = characterPersonaRepository;
+            _characterManager = characterManager;
         }
 
         [HttpPost]

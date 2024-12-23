@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using Abp.UI;
 using Icon.Matrix;
 using Icon.Matrix.CharacterPersonas;
+using Icon.Matrix.Characters;
 using Icon.Matrix.Memories;
 
 namespace Icon.BaseManagement
@@ -159,7 +160,25 @@ namespace Icon.BaseManagement
                 Columns = new List<BaseListColumnDto>
                 {
                     BaseListColumnFactory.GetCharacterNameColumn(),
+                    BaseListColumnFactory.GetTwitterPostAgentIdColumn(),
+                    BaseListColumnFactory.GetTwitterScrapeAgentIdColumn(),
+                    BaseListColumnFactory.GetTwitterUserNameColumn(),
+                    BaseListColumnFactory.GetIsTwitterScrapingEnabledColumn(),
+                    BaseListColumnFactory.GetIsTwitterPostingEnabledColumn(),
+                    BaseListColumnFactory.GetIsPromptingEnabledColumn(),
                     BaseListColumnFactory.GetRowActionsColumn(entityName: "Character"),
+                },
+                HeaderActions = new List<BaseListHeaderActionDto>
+                {
+                    new BaseListHeaderActionDto(
+                        actionType: BaseListHeaderActionType.NewCharacter,
+                        modalType: BaseModalType.ModalNew,
+                        backendEvent: new BaseBackendEventDto
+                        {
+                            BackendServiceName = BaseHelper.GetServiceName(nameof(CharacterAppService)),
+                            BackendMethodName = BaseHelper.GetMethodName(nameof(CharacterAppService.GetModalNew)),
+                        }
+                    ),
                 },
                 RowActions = new List<BaseListRowActionDto>
                 {
@@ -171,7 +190,7 @@ namespace Icon.BaseManagement
                         backendEvent: new BaseBackendEventDto
                         {
                             BackendServiceName = BaseHelper.GetServiceName(nameof(CharacterAppService)),
-                            //BackendMethodName = BaseHelper.GetMethodName(nameof(CharacterAppService.GetModalView)),
+                            BackendMethodName = BaseHelper.GetMethodName(nameof(CharacterAppService.GetModalView)),
                         }
                     ),
                     new BaseListRowActionDto(
@@ -182,7 +201,7 @@ namespace Icon.BaseManagement
                         backendEvent: new BaseBackendEventDto
                         {
                             BackendServiceName = BaseHelper.GetServiceName(nameof(CharacterAppService)),
-                            //BackendMethodName = BaseHelper.GetMethodName(nameof(CharacterAppService.GetModalEdit)),
+                            BackendMethodName = BaseHelper.GetMethodName(nameof(CharacterAppService.GetModalEdit)),
                         }
                     ),
                 }

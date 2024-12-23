@@ -210,6 +210,9 @@ Sentiment score: Either positive or negative. Positive = 1 point, negative = 0 p
 Current context:
 {JsonConvert.SerializeObject(context, Formatting.Indented)}
 
+RULE: if the context contains TwitterPostInstruction, abide by that rule, but always return the specified JSON format.
+RULE: if the context contains TwitterPostExamples, use that as a guide for the type of responses to generate. But be original and relevant to the context if the examples allow it.
+
 Remember:
 - Identify tags or return none like crypto, stocks, tech, love, music, etc.
 - Identify cryptocoins like $FTM if mentioned

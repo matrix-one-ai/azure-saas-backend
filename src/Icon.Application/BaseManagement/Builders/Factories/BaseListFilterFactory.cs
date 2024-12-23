@@ -16,7 +16,7 @@ namespace Icon.BaseManagement
                 PlaceHolder = "SearchCharacterName",
                 FilterType = BaseListFilterType.String,
                 Class = "filter-search-container",
-                FilterPath = "name",
+                FilterPath = "characterName",
                 EventOnChange = "fetchRecords",
             };
         }

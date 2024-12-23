@@ -21,6 +21,7 @@ namespace Icon.Matrix
     {
         Task<Guid> GetCharacterId(string name);
         Task<Character> GetCharacterById(Guid characterId);
+        Task<Character> UpdateCharacter(Character character);
         Task<Guid> GetActiveCharacterBioId(Guid characterId);
         Task<CharacterBio> GetActiveCharacterBio(Guid characterId);
         Task<CharacterBio> CreateInitialCharacterBio(Guid characterId);
@@ -83,6 +84,28 @@ namespace Icon.Matrix
                 .GetAll()
                 .Include(p => p.Bios)
                 .FirstOrDefaultAsync(p => p.Id == characterId);
+
+            if (character == null)
+            {
+                throw new UserFriendlyException("CharacterManager: Character not found");
+            }
+
+            if (character.Bios == null || character.Bios.Count == 0)
+            {
+                throw new UserFriendlyException("CharacterManager: Character does not have any bios");
+            }
+
+            return character;
+        }
+
+        public async Task<Character> UpdateCharacter(Character character)
+        {
+            using (var uow = _unitOfWorkManager.Begin())
+            {
+                character = await _characterRepository.UpdateAsync(character);
+                await _unitOfWorkManager.Current.SaveChangesAsync();
+                uow.Complete();
+            }
 
             return character;
         }

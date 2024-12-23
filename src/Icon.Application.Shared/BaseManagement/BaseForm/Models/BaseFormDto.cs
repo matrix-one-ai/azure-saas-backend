@@ -423,6 +423,11 @@ namespace Icon.BaseManagement
         CharacterPersonaDelete,
         CharacterPersonaView,
 
+        CharacterCreate,
+        CharacterEdit,
+        CharacterDelete,
+        CharacterView,
+
         MemoryView,
         MemoryEdit
 

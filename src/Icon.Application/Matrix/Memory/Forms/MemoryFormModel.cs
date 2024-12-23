@@ -1,6 +1,7 @@
 using System;
 using System.Linq;
 using Icon.Matrix.AIManager.CharacterMentioned;
+using Microsoft.Extensions.Logging;
 using Newtonsoft.Json;
 
 namespace Icon.Matrix.Memories.Forms
@@ -64,6 +65,7 @@ namespace Icon.Matrix.Memories.Forms
                 }
                 catch (Exception e)
                 {
+                    System.Console.WriteLine(e);
                     // log error
                 }
             }

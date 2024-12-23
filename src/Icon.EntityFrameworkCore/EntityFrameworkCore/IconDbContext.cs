@@ -147,11 +147,11 @@ namespace Icon.EntityFrameworkCore
                 .HasIndex(m => m.PlatformInteractionDate)
                 .HasDatabaseName("IX_Memory_PlatformInteractionDate");
 
-            modelBuilder.Entity<CharacterBio>()
-                .HasOne(cb => cb.Character)
-                .WithMany()
-                .HasForeignKey(cb => cb.CharacterId)
-                .OnDelete(DeleteBehavior.Restrict);
+            // modelBuilder.Entity<CharacterBio>()
+            //     .HasOne(cb => cb.Character)
+            //     .WithMany()
+            //     .HasForeignKey(cb => cb.CharacterId)
+            //     .OnDelete(DeleteBehavior.Restrict);
 
 
             modelBuilder.Entity<BinaryObject>(b => { b.HasIndex(e => new { e.TenantId }); });

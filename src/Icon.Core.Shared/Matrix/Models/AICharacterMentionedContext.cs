@@ -10,6 +10,9 @@ namespace Icon.Matrix.AIManager.CharacterMentioned
         public Tweet TweetToRespondTo { get; set; }
         public ConversationTimeLineDto ConversationTimeLine { get; set; }
         public List<Tweet> LastTweetsByUser { get; set; }
+
+        public string TwitterPostInstruction { get; set; }
+        public string TwitterPostExamples { get; set; }
     }
 
     public class CharacterToActAsDto

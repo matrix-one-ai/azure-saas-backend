@@ -211,6 +211,9 @@ namespace Icon.Matrix
 
                 tweetContext = new AICharacterMentionedContext
                 {
+                    TwitterPostExamples = memory.Character.OutputExamples,
+                    TwitterPostInstruction = memory.Character.PromptInstruction,
+
                     CharacterToActAs = new AIManager.CharacterMentioned.CharacterToActAsDto
                     {
                         Id = memory.Character?.Id ?? Guid.Empty,

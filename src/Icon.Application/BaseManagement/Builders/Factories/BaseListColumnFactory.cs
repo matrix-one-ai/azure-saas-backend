@@ -4,7 +4,6 @@ namespace Icon.BaseManagement
 {
     public static class BaseListColumnFactory
     {
-
         // GetCharacterName
         public static BaseListColumnDto GetCharacterNameColumn(
             string valuePath = "name",
@@ -24,6 +23,93 @@ namespace Icon.BaseManagement
                 Navigation = null
             };
         }
+
+        // TwitterPostAgentId
+        public static BaseListColumnDto GetTwitterPostAgentIdColumn()
+        {
+            return new BaseListColumnDto
+            {
+                Name = "TwitterPostAgentIdColumn",
+                Header = "TwitterPostAgent",
+                SortPath = "TwitterPostAgentId",
+                ValuePath = "twitterPostAgentId",
+                Width = 100,
+                CanSort = true,
+            };
+        }
+        public static BaseListColumnDto GetTwitterScrapeAgentIdColumn()
+        {
+            return new BaseListColumnDto
+            {
+                Name = "TwitterScrapeAgentIdColumn",
+                Header = "TwitterScrapeAgent",
+                SortPath = "TwitterScrapeAgentId",
+                ValuePath = "twitterScrapeAgentId",
+                Width = 100,
+                CanSort = true,
+
+            };
+        }
+
+        public static BaseListColumnDto GetTwitterUserNameColumn()
+        {
+            return new BaseListColumnDto
+            {
+                Name = "TwitterUserNameColumn",
+                Header = "TwitterUserName",
+                SortPath = "TwitterUserName",
+                ValuePath = "twitterUserName",
+                Width = 100,
+                CanSort = true,
+            };
+        }
+
+        public static BaseListColumnDto GetIsTwitterScrapingEnabledColumn()
+        {
+            return new BaseListColumnDto
+            {
+                Name = "IsTwitterScrapingEnabledColumn",
+                Header = "IsTwitterScrapingEnabled",
+                SortPath = "IsTwitterScrapingEnabled",
+                ValuePath = "isTwitterScrapingEnabled",
+                Width = 100,
+                CanSort = true,
+                UseTemplate = true,
+                Template = BaseListTemplateType.Status
+            };
+        }
+
+        public static BaseListColumnDto GetIsTwitterPostingEnabledColumn()
+        {
+            return new BaseListColumnDto
+            {
+                Name = "IsTwitterPostingEnabledColumn",
+                Header = "IsTwitterPostingEnabled",
+                SortPath = "IsTwitterPostingEnabled",
+                ValuePath = "isTwitterPostingEnabled",
+                Width = 100,
+                CanSort = true,
+                UseTemplate = true,
+                Template = BaseListTemplateType.Status
+            };
+        }
+
+        public static BaseListColumnDto GetIsPromptingEnabledColumn()
+        {
+            return new BaseListColumnDto
+            {
+                Name = "IsPromptingEnabledColumn",
+                Header = "IsPromptingEnabled",
+                SortPath = "IsPromptingEnabled",
+                ValuePath = "isPromptingEnabled",
+                Width = 100,
+                CanSort = true,
+                UseTemplate = true,
+                Template = BaseListTemplateType.Status
+            };
+        }
+
+
 
         // GetPersonaName
         public static BaseListColumnDto GetPersonaNameColumn(

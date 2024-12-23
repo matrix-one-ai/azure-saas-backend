@@ -8,6 +8,7 @@
     <text name="CharacterTweet">Tweet - Character</text>
     <text name="CharacterMentionedTweet">Tweet - Mentioned</text>
     <text name="CharacterPersonaTweet">Tweet - Persona</text>
+    <text name="CharacterReplyTweet">Tweet - Reply</text>
 
     <!-- Actions -->
     <text name="CharacterPersonaActions">Actions</text>
@@ -19,6 +20,7 @@
     <text name="SearchMemoryCharacter">Search character by name</text>
     <text name="SearchCharacterPersona">Search persona by name</text>
     <text name="SearchCharacter">Search character by name</text>
+    <text name="SearchCharacterName">Search character by name</text>
 
 
     <!-- Filter -->
@@ -37,9 +39,11 @@
     <!-- List Titles -->
     <text name="List.Title.MemoriesList">Memory navigator</text>
     <text name="List.Title.CharacterPersonaList">Persona navigator</text>
+    <text name="List.Title.CharacterList">Character navigator</text>
 
     <!-- List Header Actions -->
     <text name="List.HeaderAction.NewPersona">New persona</text>
+    <text name="List.HeaderAction.NewCharacter">New character</text>
 
     <!-- Form Fields -->
     <text name="FormField.Label.Character.Id">Character</text>
@@ -51,6 +55,37 @@
     <text name="FormField.Label.Platform.Name">Platform</text>
     <text name="FormField.Label.MemoryContent">Memory content</text>
     <text name="FormField.Label.PromptOutput">Prompt output to post</text>
+
+    <text name="FormField.Label.CharacterName">Character name</text>
+    <text name="FormField.Label.TwitterUserName">Twitter user name</text>
+    <text name="FormField.Label.TwitterScrapeAgentId">Twitter scrape agent ID</text>
+    <text name="FormField.Label.TwitterPostAgentId">Twitter post agent ID</text>
+    <text name="FormField.Label.IsTwitterScrapingEnabled">Is Twitter scraping enabled</text>
+    <text name="FormField.Label.IsTwitterPostingEnabled">Is Twitter posting enabled</text>
+    <text name="FormField.Label.IsPromptingEnabled">Is prompting enabled</text>
+    <text name="FormField.Label.PromptInstructions.PromptInstruction">Prompt instruction</text>
+    <text name="FormField.Label.PromptInstructions.OutputExamples">Output examples</text>
+
+    <text name="FormField.Label.CurrentBio.Bio">Bio</text>
+    <text name="FormField.Label.CurrentBio.Personality">Personality</text>
+    <text name="FormField.Label.CurrentBio.Appearance">Appearance</text>
+    <text name="FormField.Label.CurrentBio.Occupation">Occupation</text>
+    <text name="FormField.Label.CurrentBio.IsActive">Is active</text>
+    <text name="FormField.Label.CurrentBio.BirthDate">Birth date</text>
+    <text name="FormField.Label.CurrentBio.ActiveFrom">Active from</text>
+    <text name="FormField.Label.CurrentBio.ActiveTo">Active to</text>
+    <text name="FormField.Label.CurrentBio.Motivations">Motivations</text>
+    <text name="FormField.Label.CurrentBio.Fears">Fears</text>
+    <text name="FormField.Label.CurrentBio.Values">Values</text>
+    <text name="FormField.Label.CurrentBio.SpeechPatterns">Speech patterns</text>
+    <text name="FormField.Label.CurrentBio.Skills">Skills</text>
+    <text name="FormField.Label.CurrentBio.Backstory">Backstory</text>
+    <text name="FormField.Label.CurrentBio.PublicPersona">Public persona</text>
+    <text name="FormField.Label.CurrentBio.PrivateSelf">Private self</text>
+    <text name="FormField.Label.CurrentBio.MediaPresence">Media presence</text>
+    <text name="FormField.Label.CurrentBio.CrisisBehavior">Crisis behavior</text>
+    <text name="FormField.Label.CurrentBio.Relationships">Relationships</text>
+    <text name="FormField.Label.CurrentBio.TechDetails">Tech details</text>
 
 
     <!-- Form Validation -->
@@ -69,6 +104,7 @@
     <text name="Modal.FooterButton.SubmitMemory">Update memory</text>
     <text name="Modal.FooterButton.GeneratePrompt">Generate prompt</text>
     <text name="Modal.FooterButton.PostTweet">Post tweet</text>
+    <text name="Modal.FooterButton.SubmitCharacter">Update character</text>
 
 
     <!-- Modal Messages -->

@@ -34,6 +34,9 @@ namespace Icon.Matrix.Models
         public bool IsPromptingEnabled { get; set; }
         public string TwitterUserName { get; set; }
 
+        public string PromptInstruction { get; set; }
+        public string OutputExamples { get; set; }
+
     }
 
     public class CharacterBio : Entity<Guid>, IMustHaveTenant

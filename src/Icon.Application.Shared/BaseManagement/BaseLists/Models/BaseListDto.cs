@@ -273,6 +273,13 @@ namespace Icon.BaseManagement
                 Class = "btn btn-sm btn-outline-info btn-light-info";
                 SubIcon = BaseIconOptions.Persona;
             }
+
+            if (ActionType == BaseListHeaderActionType.NewCharacter)
+            {
+                Icon = BaseIconOptions.Create;
+                Class = "btn btn-sm btn-outline-info btn-light-info";
+                SubIcon = BaseIconOptions.Character;
+            }
             // else if (ActionType == BaseListHeaderActionType.NewClientBlockade || ActionType == BaseListHeaderActionType.NewClientBlockadeWithClient)
             // {
             //     Icon = BaseIconOptions.Create;
@@ -291,6 +298,7 @@ namespace Icon.BaseManagement
     public enum BaseListHeaderActionType
     {
         NewPersona,
+        NewCharacter
     }
 
 
