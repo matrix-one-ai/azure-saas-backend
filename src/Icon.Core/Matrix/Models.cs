@@ -29,6 +29,7 @@ namespace Icon.Matrix.Models
 
         public string TwitterPostAgentId { get; set; }
         public string TwitterScrapeAgentId { get; set; }
+        public TwitterCommType TwitterCommType { get; set; }
         public bool IsTwitterScrapingEnabled { get; set; }
         public bool IsTwitterPostingEnabled { get; set; }
         public bool IsPromptingEnabled { get; set; }

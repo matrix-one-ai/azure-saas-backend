@@ -59,13 +59,15 @@ namespace Icon.Matrix.Twitter
 
         public async Task ProcessCharacterTweetsStorage()
         {
-            await ProcessCharacterTweets();
+            await ProcessNewCharacterTweets();
+
             await ProcessUpdatedCharacterMentionedTweets();
             await ProcessNewCharacterMentionedTweets();
-            await ProcessCharacterPersonaTweets();
+
+            await ProcessNewCharacterPersonaTweets();
         }
 
-        private async Task ProcessCharacterTweets()
+        private async Task ProcessNewCharacterTweets()
         {
             var characterTweets = await _importTweetRepository
                 .GetAll()
@@ -145,11 +147,11 @@ namespace Icon.Matrix.Twitter
             }
         }
 
-        private async Task ProcessCharacterPersonaTweets()
+        private async Task ProcessNewCharacterPersonaTweets()
         {
             var characterPersonaTweets = await _importTweetRepository
                 .GetAll()
-                .Where(x => x.LastTwitterImportExported == false && x.TweetType == "CharacterPersonaTweet")
+                .Where(x => x.Exported == false && x.TweetType == "CharacterPersonaTweet")
                 .ToListAsync();
 
             foreach (var tweet in characterPersonaTweets)

@@ -57,6 +57,7 @@ namespace Icon.Matrix.Characters.Forms
                     {
                         CharacterFormFields.GetTwitterScrapeAgentId(),
                         CharacterFormFields.GetTwitterPostAgentId(),
+                        CharacterFormFields.GetTwitterPostCommunicationType()
                     }
                 },
                 new BaseFormRowDto

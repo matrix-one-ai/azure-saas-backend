@@ -22,28 +22,34 @@ namespace Icon.Matrix.Characters.Forms
             fieldName: nameof(CharacterFormModel.TwitterPostAgentId),
             valuePath: BaseHelper.GetPropertyPath<CharacterFormModel, string>(f => f.TwitterPostAgentId),
             isRequired: false,
-            columnWidth: 6
+            columnWidth: 4
+        );
 
+        public static BaseFormFieldDto GetTwitterPostCommunicationType() => BaseFormFieldFactory.CreateTextField(
+            fieldName: nameof(CharacterFormModel.TwitterCommType),
+            valuePath: BaseHelper.GetPropertyPath<CharacterFormModel, int>(f => f.TwitterCommType),
+            isRequired: false,
+            columnWidth: 4
         );
 
         public static BaseFormFieldDto GetTwitterScrapeAgentId() => BaseFormFieldFactory.CreateTextField(
             fieldName: nameof(CharacterFormModel.TwitterScrapeAgentId),
             valuePath: BaseHelper.GetPropertyPath<CharacterFormModel, string>(f => f.TwitterScrapeAgentId),
             isRequired: false,
-            columnWidth: 6
+            columnWidth: 4
         );
 
         public static BaseFormFieldDto GetIsTwitterScrapingEnabled() => BaseFormFieldFactory.CreateCheckboxField(
             fieldName: nameof(CharacterFormModel.IsTwitterScrapingEnabled),
             valuePath: BaseHelper.GetPropertyPath<CharacterFormModel, bool>(f => f.IsTwitterScrapingEnabled),
-            columnWidth: 6
+            columnWidth: 4
 
         );
 
         public static BaseFormFieldDto GetIsTwitterPostingEnabled() => BaseFormFieldFactory.CreateCheckboxField(
             fieldName: nameof(CharacterFormModel.IsTwitterPostingEnabled),
             valuePath: BaseHelper.GetPropertyPath<CharacterFormModel, bool>(f => f.IsTwitterPostingEnabled),
-            columnWidth: 6
+            columnWidth: 4
 
         );
 

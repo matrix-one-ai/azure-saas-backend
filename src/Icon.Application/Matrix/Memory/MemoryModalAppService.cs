@@ -123,15 +123,9 @@ namespace Icon.Matrix.Memories
             var tweetIdToReplyTo = memory.PlatformInteractionId;
             var tweetContent = promptResponse.ResultToPost;
 
-            if (string.IsNullOrWhiteSpace(tweetContent))
-                throw new UserFriendlyException("Tweet content is empty");
-
-            if (agentId == "Agent001")
-                tweetContent = "As allways have to agree with SAMI here!";
-
             try
             {
-                var tweet = await _twitterCommunicationService.ReplyToTweetAsync(agentId, tweetIdToReplyTo, tweetContent);
+                var tweet = await _twitterManager.ReplyToTweetAsync(character, tweetIdToReplyTo, tweetContent);
                 memory.IsActionTaken = true;
                 await _memoryManager.UpdateMemory(memory);
 
@@ -141,7 +135,6 @@ namespace Icon.Matrix.Memories
                     tweetId: tweet.Data.Id,
                     tweetContent: tweetContent
                 );
-
             }
             catch (Exception ex)
             {

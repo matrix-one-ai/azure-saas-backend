@@ -4,6 +4,7 @@ using System.Linq;
 using Abp.UI;
 using Icon.Authorization.Users;
 using Icon.BaseManagement;
+using Icon.Matrix.Enums;
 using Icon.Matrix.Memories.Forms;
 
 namespace Icon.Matrix.Characters.Forms
@@ -20,6 +21,7 @@ namespace Icon.Matrix.Characters.Forms
         public bool IsPromptingEnabled { get; set; }
         public string TwitterUserName { get; set; }
         public BaseModalType ModalType { get; set; }
+        public int TwitterCommType { get; set; }
         public CharacterPromptInstruction PromptInstructions { get; set; }
 
 
@@ -38,6 +40,7 @@ namespace Icon.Matrix.Characters.Forms
             IsTwitterPostingEnabled = character.IsTwitterPostingEnabled;
             IsPromptingEnabled = character.IsPromptingEnabled;
             TwitterUserName = character.TwitterUserName;
+            TwitterCommType = (int)character.TwitterCommType;
 
             var latestBio = character.Bios.Where(b => b.IsActive).FirstOrDefault();
 

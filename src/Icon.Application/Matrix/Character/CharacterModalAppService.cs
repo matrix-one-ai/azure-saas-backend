@@ -10,6 +10,7 @@ using Microsoft.AspNetCore.Mvc;
 using Icon.BaseManagement;
 using Icon.Matrix.Models;
 using Icon.Matrix.Characters.Forms;
+using Icon.Matrix.Enums;
 
 namespace Icon.Matrix.Characters
 {
@@ -295,6 +296,7 @@ namespace Icon.Matrix.Characters
             entity.IsPromptingEnabled = formModel.IsPromptingEnabled;
             entity.PromptInstruction = formModel.PromptInstructions.PromptInstruction;
             entity.OutputExamples = formModel.PromptInstructions.OutputExamples;
+            entity.TwitterCommType = GetTwitterCommType(formModel.TwitterCommType);
 
             // Update current bio if needed:
             if (entity.Bios != null && entity.Bios.Any())
@@ -334,6 +336,16 @@ namespace Icon.Matrix.Characters
                 SuccessMessage = L("Modal.Submit.Message.UpdatedSuccessfully"),
                 RefreshListEvent = BaseListEvent.RefreshList
             };
+        }
+
+        private TwitterCommType GetTwitterCommType(int twitterCommType)
+        {
+            if (twitterCommType == 1)
+                return TwitterCommType.TwitterApi;
+            else if (twitterCommType == 2)
+                return TwitterCommType.TwitterScraper;
+            else
+                return TwitterCommType.Unset;
         }
 
         // -------------------------------------------------

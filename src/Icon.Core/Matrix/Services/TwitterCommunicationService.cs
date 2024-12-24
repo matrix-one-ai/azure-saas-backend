@@ -23,6 +23,10 @@ namespace Icon.Matrix.Twitter
         Task<List<string>> GetTrendingTopicsAsync(string twitterAgentId, int limit = 5);
         // Task<UserProfile> GetUserProfileAsync(string twitterAgentId, string username);
         Task<List<TwitterScraperTweetResponse>> GetRepliesToTweetAsync(string twitterAgentId, string tweetId, int limit = 5);
+
+        Task<TwitterScraperPostTweetResponse> PostScraperTweetAsync(string twitterAgentId, string text);
+        Task<TwitterScraperPostTweetResponse> ReplyToScraperTweetAsync(string twitterAgentId, string tweetId, string text);
+
     }
 
     public class TwitterCommunicationService : ITwitterCommunicationService, ITransientDependency
@@ -153,6 +157,22 @@ namespace Icon.Matrix.Twitter
             return ExecuteRequestAsync<List<TwitterScraperTweetResponse>>(
                 () => _httpClient.PostAsJsonAsync("/getScraperRepliesToTweet", new { agentId = twitterAgentId, tweetId, limit }),
                 $"GetRepliesToTweetAsync for tweetId: {tweetId}"
+            );
+        }
+
+        public Task<TwitterScraperPostTweetResponse> PostScraperTweetAsync(string twitterAgentId, string text)
+        {
+            return ExecuteRequestAsync<TwitterScraperPostTweetResponse>(
+                () => _httpClient.PostAsJsonAsync("/postScraperTweet", new { agentId = twitterAgentId, text }),
+                $"PostScraperTweetAsync for agentId: {twitterAgentId}"
+            );
+        }
+
+        public Task<TwitterScraperPostTweetResponse> ReplyToScraperTweetAsync(string twitterAgentId, string tweetId, string text)
+        {
+            return ExecuteRequestAsync<TwitterScraperPostTweetResponse>(
+                () => _httpClient.PostAsJsonAsync("/replyToScraperTweet", new { agentId = twitterAgentId, tweetId, text }),
+                $"ReplyToScraperTweetAsync for tweetId: {tweetId}"
             );
         }
     }

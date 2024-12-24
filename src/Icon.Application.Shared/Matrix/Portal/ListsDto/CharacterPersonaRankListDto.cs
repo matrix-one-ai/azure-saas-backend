@@ -8,7 +8,7 @@ namespace Icon.Matrix.Portal.Dto
     {
         public Guid Id { get; set; }
         public CharacterSimpleDto Character { get; set; }
-        public PersonaSimpleDto Persona { get; set; }
+        public PersonaTwitterDto Persona { get; set; }
         public string Attitude { get; set; }
         public string Responses { get; set; }
         public bool ShouldRespondNewPosts { get; set; }

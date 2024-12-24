@@ -28,20 +28,20 @@ namespace Icon.Matrix.Memories
         private readonly IAIManager _aiManager;
         private readonly IRepository<Memory, Guid> _memoryRepository;
         private readonly IRepository<CharacterPersonaTwitterRank, Guid> _cpTwitterRankRepository;
-        private readonly ITwitterCommunicationService _twitterCommunicationService;
+        private readonly ITwitterManager _twitterManager;
 
         public MemoryAppService(
             IMemoryManager memoryManager,
             IAIManager aiManager,
             IRepository<Memory, Guid> memoryRepository,
             IRepository<CharacterPersonaTwitterRank, Guid> cpTwitterRankRepository,
-            ITwitterCommunicationService twitterCommunicationService)
+            ITwitterManager twitterManager)
         {
             _memoryManager = memoryManager;
             _aiManager = aiManager;
             _memoryRepository = memoryRepository;
             _cpTwitterRankRepository = cpTwitterRankRepository;
-            _twitterCommunicationService = twitterCommunicationService;
+            _twitterManager = twitterManager;
         }
 
         // public async Task<MemoryDto> StoreMemory(StoreMemoryInput input)

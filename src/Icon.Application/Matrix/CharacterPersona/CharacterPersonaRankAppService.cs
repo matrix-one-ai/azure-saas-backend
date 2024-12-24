@@ -74,7 +74,9 @@ namespace Icon.Matrix.CharacterPersonas
                 query = query
                     .Include(x => x.TwitterRank)
                     .Include(x => x.Character)
-                    .Include(x => x.Persona);
+                    .Include(x => x.Persona)
+                        .ThenInclude(x => x.Platforms)
+                        .ThenInclude(x => x.Platform);
             }
 
             return query;
@@ -104,7 +106,13 @@ namespace Icon.Matrix.CharacterPersonas
             {
                 Id = cp.Id,
                 Character = ObjectMapper.Map<CharacterSimpleDto>(cp.Character),
-                Persona = ObjectMapper.Map<PersonaSimpleDto>(cp.Persona),
+                Persona = new PersonaTwitterDto
+                {
+                    Id = cp.Persona.Id,
+                    Name = cp.Persona.Name,
+                    TwitterHandle = cp.Persona.Platforms?.FirstOrDefault(x => x.Platform?.Name == "Twitter")?.PlatformPersonaId,
+                    TwitterAvatarUrl = GetTwitterAvatarUrl(cp.Persona?.Platforms?.FirstOrDefault(x => x.Platform?.Name == "Twitter")?.PlatformPersonaId)
+                },
                 TwitterRank = ObjectMapper.Map<CharacterPersonaTwitterRankDto>(cp.TwitterRank),
 
                 Attitude = cp.Attitude,
@@ -117,6 +125,20 @@ namespace Icon.Matrix.CharacterPersonas
                     CanEdit = false,
                 }
             }).ToList();
+        }
+
+        private string GetTwitterAvatarUrl(string platformPersonaId)
+        {
+            if (platformPersonaId.IsNullOrEmpty())
+            {
+                return null;
+            }
+
+            // if id starts with @, remove it
+            var username = platformPersonaId.StartsWith("@") ? platformPersonaId.Substring(1) : platformPersonaId;
+            var url = $"https://x.com/{username}/photo";
+
+            return url;
         }
 
 

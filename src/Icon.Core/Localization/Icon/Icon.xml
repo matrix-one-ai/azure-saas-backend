@@ -23,6 +23,7 @@
     <text name="SearchCharacterName">Search character by name</text>
 
 
+
     <!-- Filter -->
     <text name="CharacterFilter">Character</text>
     <text name="CharacterPersonaFilter">Persona</text>
@@ -62,6 +63,7 @@
     <text name="FormField.Label.TwitterPostAgentId">Twitter post agent ID</text>
     <text name="FormField.Label.IsTwitterScrapingEnabled">Is Twitter scraping enabled</text>
     <text name="FormField.Label.IsTwitterPostingEnabled">Is Twitter posting enabled</text>
+    <text name="FormField.Label.TwitterCommType">Post type 1 API / 2 Scraper</text>
     <text name="FormField.Label.IsPromptingEnabled">Is prompting enabled</text>
     <text name="FormField.Label.PromptInstructions.PromptInstruction">Prompt instruction</text>
     <text name="FormField.Label.PromptInstructions.OutputExamples">Output examples</text>
