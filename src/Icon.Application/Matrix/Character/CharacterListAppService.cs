@@ -14,6 +14,8 @@ using Icon.Matrix.Models;
 using Microsoft.AspNetCore.Mvc;
 using Abp.Collections.Extensions;
 using System.Linq.Dynamic.Core;
+using Icon.Matrix.AIManager;
+using Icon.Matrix.Twitter;
 
 namespace Icon.Matrix.Characters
 {
@@ -27,6 +29,9 @@ namespace Icon.Matrix.Characters
         private readonly IRepository<CharacterPersona, Guid> _characterPersonaRepository;
 
         private readonly ICharacterManager _characterManager;
+        private readonly IAIManager _aiManager;
+        private readonly ITwitterManager _twitterManager;
+        private readonly IMemoryManager _memoryManager;
 
         public CharacterAppService(
             IRepository<Character, Guid> characterRepository,
@@ -34,7 +39,10 @@ namespace Icon.Matrix.Characters
             IRepository<CharacterPlatform, Guid> characterPlatformRepository,
             IRepository<CharacterTopic, Guid> characterTopicRepository,
             IRepository<CharacterPersona, Guid> characterPersonaRepository,
-            ICharacterManager characterManager)
+            ICharacterManager characterManager,
+            IAIManager aiManager,
+            ITwitterManager twitterManager,
+            IMemoryManager memoryManager)
         {
             _characterRepository = characterRepository;
             _characterBioRepository = characterBioRepository;
@@ -42,6 +50,9 @@ namespace Icon.Matrix.Characters
             _characterTopicRepository = characterTopicRepository;
             _characterPersonaRepository = characterPersonaRepository;
             _characterManager = characterManager;
+            _aiManager = aiManager;
+            _twitterManager = twitterManager;
+            _memoryManager = memoryManager;
         }
 
         [HttpPost]

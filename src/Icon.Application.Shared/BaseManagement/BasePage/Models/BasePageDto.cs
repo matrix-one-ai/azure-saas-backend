@@ -18,6 +18,7 @@ namespace Icon.BaseManagement
     {
         Memories,
         CharacterPersonas,
+        Characters
     }
 }
 

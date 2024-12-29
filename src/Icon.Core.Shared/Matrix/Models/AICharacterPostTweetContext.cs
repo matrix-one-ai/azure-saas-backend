@@ -7,6 +7,8 @@ namespace Icon.Matrix.AIManager.CharacterPostTweet
     {
         public CharacterToActAsDto CharacterToActAs { get; set; }
         public List<Tweet> PreviousCharacterTweets { get; set; }
+        public string TwitterAutoPostInstruction { get; set; }
+        public string TwitterAutoPostExamples { get; set; }
     }
 
     public class CharacterToActAsDto

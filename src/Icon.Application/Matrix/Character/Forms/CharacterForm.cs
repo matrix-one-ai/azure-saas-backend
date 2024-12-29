@@ -65,30 +65,40 @@ namespace Icon.Matrix.Characters.Forms
                     Fields = new List<BaseFormFieldDto>
                     {
                         CharacterFormFields.GetIsTwitterScrapingEnabled(),
-                        CharacterFormFields.GetIsTwitterPostingEnabled()
+                        CharacterFormFields.GetIsTwitterPostingEnabled(),
+                        CharacterFormFields.GetIsPromptingEnabled()
                     }
                 }
             }
         };
 
-        public static BaseFormSectionDto GetPromptingSection() => new BaseFormSectionDto
+        public static BaseFormSectionDto GetTwitterMentionReplyPromptingSection() => new BaseFormSectionDto
         {
-            SectionTitle = "Prompting",
+            SectionTitle = "Twitter Mention Reply - Prompt instructions",
             Rows = new List<BaseFormRowDto>
             {
                 new BaseFormRowDto
                 {
                     Fields = new List<BaseFormFieldDto>
                     {
-                        CharacterFormFields.GetIsPromptingEnabled()
+                        CharacterFormFields.GetTwitterMentionReplyInstruction(),
+                        CharacterFormFields.GetTwitterMentionReplyExamples()
                     }
-                },
+                }
+            }
+        };
+
+        public static BaseFormSectionDto GetTwitterAutoPostPromptingSection() => new BaseFormSectionDto
+        {
+            SectionTitle = "Twitter Auto Post - Prompt instructions",
+            Rows = new List<BaseFormRowDto>
+            {
                 new BaseFormRowDto
                 {
                     Fields = new List<BaseFormFieldDto>
                     {
-                        CharacterFormFields.GetPromptInstruction(),
-                        CharacterFormFields.GetOutputExamples()
+                        CharacterFormFields.GetTwitterAutoPostInstruction(),
+                        CharacterFormFields.GetTwitterAutoPostExamples()
                     }
                 }
             }
@@ -192,7 +202,8 @@ namespace Icon.Matrix.Characters.Forms
             {
                 GetMainSection(),
                 GetTwitterSection(),
-                GetPromptingSection(),
+                GetTwitterMentionReplyPromptingSection(),
+                GetTwitterAutoPostPromptingSection(),
                 GetBioSection()
             };
         }

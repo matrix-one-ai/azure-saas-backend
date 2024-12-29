@@ -11,8 +11,8 @@ namespace Icon.Matrix.AIManager.CharacterMentioned
         public ConversationTimeLineDto ConversationTimeLine { get; set; }
         public List<Tweet> LastTweetsByUser { get; set; }
 
-        public string TwitterPostInstruction { get; set; }
-        public string TwitterPostExamples { get; set; }
+        public string TwitterMentionReplyInstruction { get; set; }
+        public string TwitterMentionReplyExamples { get; set; }
     }
 
     public class CharacterToActAsDto

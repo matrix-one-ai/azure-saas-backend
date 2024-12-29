@@ -211,8 +211,8 @@ namespace Icon.Matrix
 
                 tweetContext = new AICharacterMentionedContext
                 {
-                    TwitterPostExamples = memory.Character.OutputExamples,
-                    TwitterPostInstruction = memory.Character.PromptInstruction,
+                    TwitterMentionReplyExamples = memory.Character.TwitterMentionReplyExamples,
+                    TwitterMentionReplyInstruction = memory.Character.TwitterMentionReplyInstruction,
 
                     CharacterToActAs = new AIManager.CharacterMentioned.CharacterToActAsDto
                     {
@@ -353,7 +353,9 @@ namespace Icon.Matrix
                     {
                         TweetContent = x.MemoryContent,
                         TweetDate = x.PlatformInteractionDate
-                    }).ToList()
+                    }).ToList(),
+                    TwitterAutoPostExamples = character.TwitterAutoPostExamples,
+                    TwitterAutoPostInstruction = character.TwitterAutoPostInstruction
                 };
 
                 return tweetContext;

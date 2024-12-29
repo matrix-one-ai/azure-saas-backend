@@ -55,7 +55,8 @@ namespace Icon.Matrix.Characters.Forms
 
         public static BaseFormFieldDto GetIsPromptingEnabled() => BaseFormFieldFactory.CreateCheckboxField(
             fieldName: nameof(CharacterFormModel.IsPromptingEnabled),
-            valuePath: BaseHelper.GetPropertyPath<CharacterFormModel, bool>(f => f.IsPromptingEnabled)
+            valuePath: BaseHelper.GetPropertyPath<CharacterFormModel, bool>(f => f.IsPromptingEnabled),
+            columnWidth: 4
         );
 
         public static BaseFormFieldDto GetTwitterUserName() => BaseFormFieldFactory.CreateTextField(
@@ -204,16 +205,30 @@ namespace Icon.Matrix.Characters.Forms
 
         // -- Prompt Instructions Fields --
 
-        public static BaseFormFieldDto GetPromptInstruction() => BaseFormFieldFactory.CreateTextAreaField(
-            fieldName: nameof(CharacterFormModel.PromptInstructions) + "." + nameof(CharacterPromptInstruction.PromptInstruction),
-            valuePath: BaseHelper.GetPropertyPath<CharacterFormModel, string>(f => f.PromptInstructions.PromptInstruction),
+        public static BaseFormFieldDto GetTwitterMentionReplyInstruction() => BaseFormFieldFactory.CreateTextAreaField(
+            fieldName: nameof(CharacterFormModel.PromptInstructions) + "." + nameof(CharacterPromptInstruction.TwitterMentionReplyInstruction),
+            valuePath: BaseHelper.GetPropertyPath<CharacterFormModel, string>(f => f.PromptInstructions.TwitterMentionReplyInstruction),
             isRequired: false,
             columnWidth: 12
         );
 
-        public static BaseFormFieldDto GetOutputExamples() => BaseFormFieldFactory.CreateTextAreaField(
-            fieldName: nameof(CharacterFormModel.PromptInstructions) + "." + nameof(CharacterPromptInstruction.OutputExamples),
-            valuePath: BaseHelper.GetPropertyPath<CharacterFormModel, string>(f => f.PromptInstructions.OutputExamples),
+        public static BaseFormFieldDto GetTwitterMentionReplyExamples() => BaseFormFieldFactory.CreateTextAreaField(
+            fieldName: nameof(CharacterFormModel.PromptInstructions) + "." + nameof(CharacterPromptInstruction.TwitterMentionReplyExamples),
+            valuePath: BaseHelper.GetPropertyPath<CharacterFormModel, string>(f => f.PromptInstructions.TwitterMentionReplyExamples),
+            isRequired: false,
+            columnWidth: 12
+        );
+
+        public static BaseFormFieldDto GetTwitterAutoPostInstruction() => BaseFormFieldFactory.CreateTextAreaField(
+            fieldName: nameof(CharacterFormModel.PromptInstructions) + "." + nameof(CharacterPromptInstruction.TwitterAutoPostInstruction),
+            valuePath: BaseHelper.GetPropertyPath<CharacterFormModel, string>(f => f.PromptInstructions.TwitterAutoPostInstruction),
+            isRequired: false,
+            columnWidth: 12
+        );
+
+        public static BaseFormFieldDto GetTwitterAutoPostExamples() => BaseFormFieldFactory.CreateTextAreaField(
+            fieldName: nameof(CharacterFormModel.PromptInstructions) + "." + nameof(CharacterPromptInstruction.TwitterAutoPostExamples),
+            valuePath: BaseHelper.GetPropertyPath<CharacterFormModel, string>(f => f.PromptInstructions.TwitterAutoPostExamples),
             isRequired: false,
             columnWidth: 12
         );

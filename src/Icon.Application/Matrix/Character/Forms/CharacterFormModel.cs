@@ -78,8 +78,11 @@ namespace Icon.Matrix.Characters.Forms
 
             PromptInstructions = new CharacterPromptInstruction
             {
-                PromptInstruction = character.PromptInstruction,
-                OutputExamples = character.OutputExamples
+                TwitterAutoPostInstruction = character.TwitterAutoPostInstruction,
+                TwitterAutoPostExamples = character.TwitterAutoPostExamples,
+
+                TwitterMentionReplyInstruction = character.TwitterMentionReplyInstruction,
+                TwitterMentionReplyExamples = character.TwitterMentionReplyExamples
             };
 
         }
@@ -111,8 +114,12 @@ namespace Icon.Matrix.Characters.Forms
 
     public class CharacterPromptInstruction
     {
-        public string PromptInstruction { get; set; }
-        public string OutputExamples { get; set; }
+        public string TwitterAutoPostInstruction { get; set; }
+        public string TwitterAutoPostExamples { get; set; }
+        public int TwitterAutoPostDelayMinutes { get; set; }
+
+        public string TwitterMentionReplyInstruction { get; set; }
+        public string TwitterMentionReplyExamples { get; set; }
     }
 
 }

@@ -13,6 +13,8 @@ namespace Icon.BaseManagement
                     return BuildMemoriesPage(pageType, listType);
                 case BasePageType.CharacterPersonas:
                     return BuildCharacterPersonasPage(pageType, listType);
+                case BasePageType.Characters:
+                    return BuildCharactersPage(pageType, listType);
                 default:
                     throw new UserFriendlyException($"BasePageBuilder - Unknown page type: {pageType}");
             }
@@ -44,108 +46,17 @@ namespace Icon.BaseManagement
             return page;
         }
 
-        public BasePageDto BuildLocationsPage(BasePageType pageType, BaseListType listType)
+        public BasePageDto BuildCharactersPage(BasePageType pageType, BaseListType listType)
         {
             var page = new BasePageDto
             {
                 PageTitle = "Page.Title." + pageType,
-                PageIcon = BaseIconOptions.Location,
-                PageHeaderShow = true,
-                List = new BaseListBuilder().Build(listType)
-            };
-
-            return page;
-        }
-
-        public BasePageDto BuildLocationTripsPage(BasePageType pageType, BaseListType listType)
-        {
-            var page = new BasePageDto
-            {
-                PageTitle = "Page.Title." + pageType,
-                PageIcon = BaseIconOptions.Trip,
-                List = new BaseListBuilder().Build(listType),
-            };
-            page.PageHeaderShow = page.List.PageHeaderShow;
-
-            return page;
-        }
-
-        public BasePageDto BuildLocationRoutesPage(BasePageType pageType, BaseListType listType)
-        {
-            var page = new BasePageDto
-            {
-                PageTitle = "Page.Title." + pageType,
-                PageIcon = BaseIconOptions.Route,
+                PageIcon = BaseIconOptions.Character,
                 List = new BaseListBuilder().Build(listType)
             };
             page.PageHeaderShow = page.List.PageHeaderShow;
 
             return page;
         }
-
-        public BasePageDto BuildLocationClientPage(BasePageType pageType, BaseListType listType)
-        {
-            var page = new BasePageDto
-            {
-                PageTitle = "Page.Title." + pageType,
-                PageIcon = BaseIconOptions.Client,
-                PageHeaderShow = false
-            };
-
-            return page;
-        }
-
-        public BasePageDto BuildLocationClientsPage(BasePageType pageType, BaseListType listType)
-        {
-            var page = new BasePageDto
-            {
-                PageTitle = "Page.Title." + pageType,
-                PageIcon = BaseIconOptions.Client,
-                List = new BaseListBuilder().Build(listType)
-            };
-            page.PageHeaderShow = page.List.PageHeaderShow;
-
-            return page;
-        }
-
-        public BasePageDto BuildLocationBlockadesPage(BasePageType pageType, BaseListType listType)
-        {
-            var page = new BasePageDto
-            {
-                PageTitle = "Page.Title." + pageType,
-                PageIcon = BaseIconOptions.Blockade,
-                List = new BaseListBuilder().Build(listType)
-            };
-            page.PageHeaderShow = page.List.PageHeaderShow;
-
-            return page;
-        }
-
-        public BasePageDto BuildLocationChangeRequestsPage(BasePageType pageType, BaseListType listType)
-        {
-            var page = new BasePageDto
-            {
-                PageTitle = "Page.Title." + pageType,
-                PageIcon = BaseIconOptions.ChangeRequest,
-                List = new BaseListBuilder().Build(listType)
-            };
-            page.PageHeaderShow = page.List.PageHeaderShow;
-
-            return page;
-        }
-
-        public BasePageDto BuildLocationSchedulesPage(BasePageType pageType, BaseListType listType)
-        {
-            var page = new BasePageDto
-            {
-                PageTitle = "Page.Title." + pageType,
-                PageIcon = BaseIconOptions.Schedule,
-                List = new BaseListBuilder().Build(listType)
-            };
-            page.PageHeaderShow = page.List.PageHeaderShow;
-
-            return page;
-        }
-
     }
 }

@@ -35,8 +35,12 @@ namespace Icon.Matrix.Models
         public bool IsPromptingEnabled { get; set; }
         public string TwitterUserName { get; set; }
 
-        public string PromptInstruction { get; set; }
-        public string OutputExamples { get; set; }
+        public string TwitterAutoPostInstruction { get; set; }
+        public string TwitterAutoPostExamples { get; set; }
+        public int TwitterAutoPostDelayMinutes { get; set; }
+
+        public string TwitterMentionReplyInstruction { get; set; }
+        public string TwitterMentionReplyExamples { get; set; }
 
     }
 
@@ -372,7 +376,7 @@ namespace Icon.Matrix.Models
         public int TenantId { get; set; }
         public string TaskName { get; set; }
         public Guid CharacterId { get; set; }
-        public string TwitterAgentId { get; set; }
+        //public string TwitterAgentId { get; set; }
         public int ImportLimitTotal { get; set; }
         public DateTime? LastRunCompletionTime { get; set; }
         public int LastRunDurationSeconds { get; set; }

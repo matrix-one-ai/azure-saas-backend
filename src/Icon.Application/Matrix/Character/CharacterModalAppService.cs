@@ -57,7 +57,8 @@ namespace Icon.Matrix.Characters
                 CharacterForm.GetSetupSection(),
                 CharacterForm.GetMainSection(),
                 CharacterForm.GetTwitterSection(),
-                CharacterForm.GetPromptingSection(),
+                CharacterForm.GetTwitterMentionReplyPromptingSection(),
+                CharacterForm.GetTwitterAutoPostPromptingSection(),
                 CharacterForm.GetBioSection()
             };
 
@@ -119,7 +120,8 @@ namespace Icon.Matrix.Characters
                 CharacterForm.GetSetupSection().DisableAllFields(),
                 CharacterForm.GetMainSection().DisableAllFields(),
                 CharacterForm.GetTwitterSection().DisableAllFields(),
-                CharacterForm.GetPromptingSection().DisableAllFields(),
+                CharacterForm.GetTwitterMentionReplyPromptingSection().DisableAllFields(),
+                CharacterForm.GetTwitterAutoPostPromptingSection().DisableAllFields(),
                 CharacterForm.GetBioSection().DisableAllFields()
             };
 
@@ -161,6 +163,12 @@ namespace Icon.Matrix.Characters
 
             modal.FooterButtons = new List<BaseModalFooterButtonDto>
             {
+                BaseModalButtonFactory.PostTestTweet(
+                    backendEvent: new BaseBackendEventDto(
+                        backendServiceName: BaseHelper.GetServiceName(nameof(CharacterAppService)),
+                        backendMethodName: BaseHelper.GetMethodName(nameof(TestAutoTweet))
+                    )
+                ),
                 BaseModalButtonFactory.Submit(
                     entity: nameof(Character),
                     backendEvent: new BaseBackendEventDto(
@@ -177,7 +185,8 @@ namespace Icon.Matrix.Characters
                 CharacterForm.GetSetupSection().DisableAllFields(),
                 CharacterForm.GetMainSection().DisableAllFields(),
                 CharacterForm.GetTwitterSection(),
-                CharacterForm.GetPromptingSection(),
+                CharacterForm.GetTwitterMentionReplyPromptingSection(),
+                CharacterForm.GetTwitterAutoPostPromptingSection(),
                 CharacterForm.GetBioSection()
             };
 
@@ -217,7 +226,12 @@ namespace Icon.Matrix.Characters
                 IsTwitterScrapingEnabled = formModel.IsTwitterScrapingEnabled,
                 IsTwitterPostingEnabled = formModel.IsTwitterPostingEnabled,
                 IsPromptingEnabled = formModel.IsPromptingEnabled,
-                TwitterUserName = formModel.TwitterUserName
+                TwitterUserName = formModel.TwitterUserName,
+                TwitterCommType = GetTwitterCommType(formModel.TwitterCommType),
+                TwitterAutoPostInstruction = formModel.PromptInstructions.TwitterAutoPostInstruction,
+                TwitterAutoPostExamples = formModel.PromptInstructions.TwitterAutoPostExamples,
+                TwitterMentionReplyInstruction = formModel.PromptInstructions.TwitterMentionReplyInstruction,
+                TwitterMentionReplyExamples = formModel.PromptInstructions.TwitterMentionReplyExamples
             };
 
             // If you store the "bio" directly or you have a separate entity for it,
@@ -294,8 +308,12 @@ namespace Icon.Matrix.Characters
             entity.IsTwitterScrapingEnabled = formModel.IsTwitterScrapingEnabled;
             entity.IsTwitterPostingEnabled = formModel.IsTwitterPostingEnabled;
             entity.IsPromptingEnabled = formModel.IsPromptingEnabled;
-            entity.PromptInstruction = formModel.PromptInstructions.PromptInstruction;
-            entity.OutputExamples = formModel.PromptInstructions.OutputExamples;
+
+            entity.TwitterAutoPostInstruction = formModel.PromptInstructions.TwitterAutoPostInstruction;
+            entity.TwitterAutoPostExamples = formModel.PromptInstructions.TwitterAutoPostExamples;
+            entity.TwitterMentionReplyInstruction = formModel.PromptInstructions.TwitterMentionReplyInstruction;
+            entity.TwitterMentionReplyExamples = formModel.PromptInstructions.TwitterMentionReplyExamples;
+
             entity.TwitterCommType = GetTwitterCommType(formModel.TwitterCommType);
 
             // Update current bio if needed:
@@ -338,6 +356,9 @@ namespace Icon.Matrix.Characters
             };
         }
 
+
+
+
         private TwitterCommType GetTwitterCommType(int twitterCommType)
         {
             if (twitterCommType == 1)
@@ -347,6 +368,37 @@ namespace Icon.Matrix.Characters
             else
                 return TwitterCommType.Unset;
         }
+
+
+        // -------------------------------------------------
+        // Test Auto Post
+        // -------------------------------------------------
+        [HttpPost]
+        public async Task<BaseModalSubmittedDto> TestAutoTweet(BaseModalDto modal)
+        {
+
+            var formModel = new CharacterFormModel();
+            modal.Form.UpdateDtoFromFieldValues(formModel);
+
+            if (formModel.CharacterId == Guid.Empty)
+                throw new UserFriendlyException("EntityId is required");
+
+            try
+            {
+                await _memoryManager.RunCharacterPostTweetPrompt(formModel.CharacterId, AIModelType.Llama);
+            }
+            catch (Exception ex)
+            {
+                throw new UserFriendlyException("Error sending tweet: " + ex.Message);
+            }
+
+            return new BaseModalSubmittedDto
+            {
+                SuccessMessage = L("Modal.Submit.Message.TweetSentSuccessfully"),
+                RefreshListEvent = BaseListEvent.RefreshList
+            };
+        }
+
 
         // -------------------------------------------------
         // DELETE

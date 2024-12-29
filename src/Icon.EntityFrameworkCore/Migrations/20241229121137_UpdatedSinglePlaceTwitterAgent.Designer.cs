@@ -4,6 +4,7 @@ using Icon.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
 using Microsoft.EntityFrameworkCore.Metadata;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 
 #nullable disable
@@ -11,9 +12,11 @@ using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 namespace Icon.Migrations
 {
     [DbContext(typeof(IconDbContext))]
-    partial class IconDbContextModelSnapshot : ModelSnapshot
+    [Migration("20241229121137_UpdatedSinglePlaceTwitterAgent")]
+    partial class UpdatedSinglePlaceTwitterAgent
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        /// <inheritdoc />
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
@@ -2119,26 +2122,17 @@ namespace Icon.Migrations
                     b.Property<string>("Name")
                         .HasColumnType("nvarchar(max)");
 
+                    b.Property<string>("OutputExamples")
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<string>("PromptInstruction")
+                        .HasColumnType("nvarchar(max)");
+
                     b.Property<int>("TenantId")
                         .HasColumnType("int");
 
-                    b.Property<int>("TwitterAutoPostDelayMinutes")
-                        .HasColumnType("int");
-
-                    b.Property<string>("TwitterAutoPostExamples")
-                        .HasColumnType("nvarchar(max)");
-
-                    b.Property<string>("TwitterAutoPostInstruction")
-                        .HasColumnType("nvarchar(max)");
-
                     b.Property<int>("TwitterCommType")
                         .HasColumnType("int");
-
-                    b.Property<string>("TwitterMentionReplyExamples")
-                        .HasColumnType("nvarchar(max)");
-
-                    b.Property<string>("TwitterMentionReplyInstruction")
-                        .HasColumnType("nvarchar(max)");
 
                     b.Property<string>("TwitterPostAgentId")
                         .HasColumnType("nvarchar(max)");

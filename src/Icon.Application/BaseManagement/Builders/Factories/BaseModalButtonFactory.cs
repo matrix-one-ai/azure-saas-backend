@@ -20,11 +20,23 @@ namespace Icon.BaseManagement
             SwitchModalEvent = switchModalEvent
         };
 
+        public static BaseModalFooterButtonDto PostTestTweet(BaseBackendEventDto backendEvent) => new BaseModalFooterButtonDto()
+        {
+            Type = nameof(PostTweet),
+            Text = "Modal.FooterButton.PostTweet",
+            Icon = BaseIconOptions.PostTweet,
+            Class = "btn btn-light-primary btn-outline-primary fw-bold",
+            Event = "submitModal",
+            IsVisible = true,
+            Alignment = BaseAlignmentOptions.Left,
+            BackendEvent = backendEvent
+        };
+
         public static BaseModalFooterButtonDto PostTweet(BaseBackendEventDto switchModalEvent) => new BaseModalFooterButtonDto()
         {
             Type = nameof(PostTweet),
             Text = "Modal.FooterButton.PostTweet",
-            Icon = BaseIconOptions.Generate,
+            Icon = BaseIconOptions.PostTweet,
             Class = "btn btn-light-primary btn-outline-primary fw-bold",
             Event = "switchModal",
             IsVisible = true,

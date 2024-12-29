@@ -258,7 +258,7 @@ namespace Icon.Matrix.Twitter
 
                 if (importTask != null)
                 {
-                    await ImportTweetsOfCharacterAsync(importTask);
+                    await ImportTweetsOfCharacterAsync(importTask, character);
                 }
             }
         }
@@ -271,7 +271,7 @@ namespace Icon.Matrix.Twitter
             {
                 try
                 {
-                    if (task == null || task.CharacterId == Guid.Empty || string.IsNullOrEmpty(task.TwitterAgentId))
+                    if (task == null || task.CharacterId == Guid.Empty || string.IsNullOrEmpty(character.TwitterPostAgentId))
                     {
                         task ??= new TwitterImportTask();
                         task.LastRunCompletionTime = null;
@@ -280,7 +280,7 @@ namespace Icon.Matrix.Twitter
                         {
                             TenantId = task.TenantId,
                             CharacterId = task.CharacterId,
-                            TwitterAgentId = task.TwitterAgentId,
+                            TwitterAgentId = character.TwitterPostAgentId,
                             TaskName = task.TaskName,
                             Message = "PostCharacterTweetAsync: Invalid task or missing fields.",
                             LogLevel = "Warning",
@@ -301,7 +301,7 @@ namespace Icon.Matrix.Twitter
                     {
                         TenantId = task?.TenantId ?? 0,
                         CharacterId = task?.CharacterId ?? Guid.Empty,
-                        TwitterAgentId = task?.TwitterAgentId,
+                        TwitterAgentId = character.TwitterPostAgentId,
                         TaskName = task?.TaskName,
                         Message = "PostCharacterTweetAsync failed.",
                         LogLevel = "Error",
@@ -330,7 +330,7 @@ namespace Icon.Matrix.Twitter
                 {
                     TenantId = task.TenantId,
                     CharacterId = task.CharacterId,
-                    TwitterAgentId = task.TwitterAgentId,
+                    TwitterAgentId = character.TwitterPostAgentId,
                     TaskName = task.TaskName,
                     Message = "Successfully posted character tweet.",
                     LogLevel = "Information",
@@ -357,21 +357,21 @@ namespace Icon.Matrix.Twitter
                 {
                     if (task.TaskName == "ImportTweetsOfCharacterAsync")
                     {
-                        await ImportTweetsOfCharacterAsync(task);
+                        await ImportTweetsOfCharacterAsync(task, character);
                     }
                     else if (task.TaskName == "ImportMentionsOfCharacterAsync")
                     {
-                        await ImportMentionsOfCharacterAsync(task);
+                        await ImportMentionsOfCharacterAsync(task, character);
                     }
                     else if (task.TaskName == "ImportTweetsOfCharacterPersonasAsync")
                     {
-                        await ImportTweetsOfCharacterPersonasAsync(task);
+                        await ImportTweetsOfCharacterPersonasAsync(task, character);
                     }
                 }
             }
         }
 
-        private async Task<TwitterImportTask> ImportTweetsOfCharacterAsync(TwitterImportTask task)
+        private async Task<TwitterImportTask> ImportTweetsOfCharacterAsync(TwitterImportTask task, Character character)
         {
             var startTime = DateTime.UtcNow;
 
@@ -379,8 +379,29 @@ namespace Icon.Matrix.Twitter
             {
                 try
                 {
-                    // 1) Basic validations
-                    if (task == null || task.CharacterId == Guid.Empty || string.IsNullOrEmpty(task.TwitterAgentId))
+
+                    // 1) Retrieve character             
+                    if (character == null)
+                    {
+                        task.LastRunCompletionTime = null;
+                        var noCharacterLog = new TwitterImportLog
+                        {
+                            TenantId = task.TenantId,
+                            CharacterId = task.CharacterId,
+                            TaskName = task.TaskName,
+                            Message = "No matching character found in DB.",
+                            LogLevel = "Warning",
+                            LoggedAt = DateTime.UtcNow
+                        };
+                        await _twitterImportLogRepository.InsertAsync(noCharacterLog);
+
+                        await _unitOfWorkManager.Current.SaveChangesAsync();
+                        await uow.CompleteAsync();
+                        return task;
+                    }
+
+                    // 2) Basic validations
+                    if (task == null || task.CharacterId == Guid.Empty || string.IsNullOrEmpty(character?.TwitterScrapeAgentId))
                     {
                         task ??= new TwitterImportTask();
                         task.LastRunCompletionTime = null;
@@ -390,36 +411,13 @@ namespace Icon.Matrix.Twitter
                         {
                             TenantId = task.TenantId,
                             CharacterId = task.CharacterId,
-                            TwitterAgentId = task.TwitterAgentId,
+                            TwitterAgentId = character?.TwitterScrapeAgentId,
                             TaskName = task.TaskName,
                             Message = "ImportTweetsOfCharacterAsync: Invalid task or missing fields.",
                             LogLevel = "Warning",
                             LoggedAt = DateTime.UtcNow
                         };
                         await _twitterImportLogRepository.InsertAsync(invalidLog);
-
-                        await _unitOfWorkManager.Current.SaveChangesAsync();
-                        await uow.CompleteAsync();
-                        return task;
-                    }
-
-                    // 2) Retrieve character
-                    var character = await _characterRepository.FirstOrDefaultAsync(x => x.Id == task.CharacterId);
-                    if (character == null)
-                    {
-                        task.LastRunCompletionTime = null;
-
-                        var noCharacterLog = new TwitterImportLog
-                        {
-                            TenantId = task.TenantId,
-                            CharacterId = task.CharacterId,
-                            TwitterAgentId = task.TwitterAgentId,
-                            TaskName = task.TaskName,
-                            Message = "No matching character found in DB.",
-                            LogLevel = "Warning",
-                            LoggedAt = DateTime.UtcNow
-                        };
-                        await _twitterImportLogRepository.InsertAsync(noCharacterLog);
 
                         await _unitOfWorkManager.Current.SaveChangesAsync();
                         await uow.CompleteAsync();
@@ -436,7 +434,7 @@ namespace Icon.Matrix.Twitter
 
                     // 5) Fetch tweets
                     var tweets = await _twitterCommunicationService.GetTweetsAsync(
-                        task.TwitterAgentId,
+                        character.TwitterScrapeAgentId,
                         userSearch,
                         importLimit
                     );
@@ -471,7 +469,7 @@ namespace Icon.Matrix.Twitter
                     {
                         TenantId = task.TenantId,
                         CharacterId = task.CharacterId,
-                        TwitterAgentId = task.TwitterAgentId,
+                        TwitterAgentId = character.TwitterScrapeAgentId,
                         TaskName = task.TaskName,
                         Message = $"Successfully imported {tweets.Count} tweets.",
                         LogLevel = "Information",
@@ -492,7 +490,7 @@ namespace Icon.Matrix.Twitter
                     {
                         TenantId = task?.TenantId ?? 0,  // or handle null
                         CharacterId = task?.CharacterId ?? Guid.Empty,
-                        TwitterAgentId = task?.TwitterAgentId,
+                        TwitterAgentId = character?.TwitterScrapeAgentId,
                         TaskName = task?.TaskName,
                         Message = "Import failed.",
                         LogLevel = "Error",
@@ -509,7 +507,7 @@ namespace Icon.Matrix.Twitter
             }
         }
 
-        private async Task<TwitterImportTask> ImportMentionsOfCharacterAsync(TwitterImportTask task)
+        private async Task<TwitterImportTask> ImportMentionsOfCharacterAsync(TwitterImportTask task, Character character)
         {
             var startTime = DateTime.UtcNow;
 
@@ -517,31 +515,7 @@ namespace Icon.Matrix.Twitter
             {
                 try
                 {
-                    // 1) Basic validations
-                    if (task == null || task.CharacterId == Guid.Empty || string.IsNullOrEmpty(task.TwitterAgentId))
-                    {
-                        task ??= new TwitterImportTask();
-                        task.LastRunCompletionTime = null;
-
-                        var invalidLog = new TwitterImportLog
-                        {
-                            TenantId = task.TenantId,
-                            CharacterId = task.CharacterId,
-                            TwitterAgentId = task.TwitterAgentId,
-                            TaskName = task.TaskName,
-                            Message = "ImportMentionsOfCharacterAsync: Invalid task or missing fields.",
-                            LogLevel = "Warning",
-                            LoggedAt = DateTime.UtcNow
-                        };
-                        await _twitterImportLogRepository.InsertAsync(invalidLog);
-
-                        await _unitOfWorkManager.Current.SaveChangesAsync();
-                        await uow.CompleteAsync();
-                        return task;
-                    }
-
-                    // 2) Retrieve character
-                    var character = await _characterRepository.FirstOrDefaultAsync(x => x.Id == task.CharacterId);
+                    // 1) Retrieve character                    
                     if (character == null)
                     {
                         task.LastRunCompletionTime = null;
@@ -550,13 +524,36 @@ namespace Icon.Matrix.Twitter
                         {
                             TenantId = task.TenantId,
                             CharacterId = task.CharacterId,
-                            TwitterAgentId = task.TwitterAgentId,
+                            TwitterAgentId = character.TwitterScrapeAgentId,
                             TaskName = task.TaskName,
                             Message = "No matching character found in DB.",
                             LogLevel = "Warning",
                             LoggedAt = DateTime.UtcNow
                         };
                         await _twitterImportLogRepository.InsertAsync(noCharacterLog);
+
+                        await _unitOfWorkManager.Current.SaveChangesAsync();
+                        await uow.CompleteAsync();
+                        return task;
+                    }
+
+                    // 2) Basic validations
+                    if (task == null || task.CharacterId == Guid.Empty || string.IsNullOrEmpty(character?.TwitterScrapeAgentId))
+                    {
+                        task ??= new TwitterImportTask();
+                        task.LastRunCompletionTime = null;
+
+                        var invalidLog = new TwitterImportLog
+                        {
+                            TenantId = task.TenantId,
+                            CharacterId = task.CharacterId,
+                            TwitterAgentId = character?.TwitterScrapeAgentId,
+                            TaskName = task.TaskName,
+                            Message = "ImportMentionsOfCharacterAsync: Invalid task or missing fields.",
+                            LogLevel = "Warning",
+                            LoggedAt = DateTime.UtcNow
+                        };
+                        await _twitterImportLogRepository.InsertAsync(invalidLog);
 
                         await _unitOfWorkManager.Current.SaveChangesAsync();
                         await uow.CompleteAsync();
@@ -570,7 +567,7 @@ namespace Icon.Matrix.Twitter
 
                     // 4) Fetch mentions via the comm. service
                     var mentions = await _twitterCommunicationService.GetUserMentionsAsync(
-                        task.TwitterAgentId,
+                        character.TwitterScrapeAgentId,
                         userSearch,
                         task.ImportLimitTotal
                     );
@@ -604,7 +601,7 @@ namespace Icon.Matrix.Twitter
                     {
                         TenantId = task.TenantId,
                         CharacterId = task.CharacterId,
-                        TwitterAgentId = task.TwitterAgentId,
+                        TwitterAgentId = character.TwitterScrapeAgentId,
                         TaskName = task.TaskName,
                         Message = "Successfully imported mentions for character.",
                         LogLevel = "Information",
@@ -624,7 +621,7 @@ namespace Icon.Matrix.Twitter
                     {
                         TenantId = task?.TenantId ?? 0,
                         CharacterId = task?.CharacterId ?? Guid.Empty,
-                        TwitterAgentId = task?.TwitterAgentId,
+                        TwitterAgentId = character?.TwitterScrapeAgentId,
                         TaskName = task?.TaskName,
                         Message = "ImportMentionsOfCharacter failed.",
                         LogLevel = "Error",
@@ -640,7 +637,7 @@ namespace Icon.Matrix.Twitter
             }
         }
 
-        private async Task<TwitterImportTask> ImportTweetsOfCharacterPersonasAsync(TwitterImportTask task)
+        private async Task<TwitterImportTask> ImportTweetsOfCharacterPersonasAsync(TwitterImportTask task, Character character)
         {
             var startTime = DateTime.UtcNow;
 
@@ -648,8 +645,31 @@ namespace Icon.Matrix.Twitter
             {
                 try
                 {
-                    // 1) Basic validations
-                    if (task == null || task.CharacterId == Guid.Empty || string.IsNullOrEmpty(task.TwitterAgentId))
+                    // 1) Retrieve character                    
+                    if (character == null)
+                    {
+                        task.LastRunCompletionTime = null;
+
+                        var noCharacterLog = new TwitterImportLog
+                        {
+                            TenantId = task.TenantId,
+                            CharacterId = task.CharacterId,
+                            TwitterAgentId = character?.TwitterScrapeAgentId,
+                            TaskName = task.TaskName,
+                            Message = "No matching character found in DB.",
+                            LogLevel = "Warning",
+                            LoggedAt = DateTime.UtcNow
+                        };
+                        await _twitterImportLogRepository.InsertAsync(noCharacterLog);
+
+                        await _unitOfWorkManager.Current.SaveChangesAsync();
+                        await uow.CompleteAsync();
+                        return task;
+                    }
+
+
+                    // 2) Basic validations
+                    if (task == null || task.CharacterId == Guid.Empty || string.IsNullOrEmpty(character.TwitterScrapeAgentId))
                     {
                         task ??= new TwitterImportTask();
                         task.LastRunCompletionTime = null;
@@ -659,7 +679,7 @@ namespace Icon.Matrix.Twitter
                         {
                             TenantId = task.TenantId,
                             CharacterId = task.CharacterId,
-                            TwitterAgentId = task.TwitterAgentId,
+                            TwitterAgentId = character?.TwitterScrapeAgentId,
                             TaskName = task.TaskName,
                             Message = "ImportTweetsOfCharacterPersonasAsync: Invalid task or missing fields.",
                             LogLevel = "Warning",
@@ -672,28 +692,7 @@ namespace Icon.Matrix.Twitter
                         return task;
                     }
 
-                    // 2) Retrieve character
-                    var character = await _characterRepository.FirstOrDefaultAsync(x => x.Id == task.CharacterId);
-                    if (character == null)
-                    {
-                        task.LastRunCompletionTime = null;
 
-                        var noCharacterLog = new TwitterImportLog
-                        {
-                            TenantId = task.TenantId,
-                            CharacterId = task.CharacterId,
-                            TwitterAgentId = task.TwitterAgentId,
-                            TaskName = task.TaskName,
-                            Message = "No matching character found in DB.",
-                            LogLevel = "Warning",
-                            LoggedAt = DateTime.UtcNow
-                        };
-                        await _twitterImportLogRepository.InsertAsync(noCharacterLog);
-
-                        await _unitOfWorkManager.Current.SaveChangesAsync();
-                        await uow.CompleteAsync();
-                        return task;
-                    }
 
                     var characterPersonas = await _characterPersonaRepository
                         .GetAll()
@@ -744,7 +743,7 @@ namespace Icon.Matrix.Twitter
                         // Example: use the same "GetTweetsAsync"
                         // Or if you have multiple "agents," pass in the persona's agent
                         var tweets = await _twitterCommunicationService.GetTweetsAsync(
-                            task.TwitterAgentId,
+                            character.TwitterScrapeAgentId,
                             userSearch,
                             task.ImportLimitTotal > 0 ? task.ImportLimitTotal : 10
                         );
@@ -780,7 +779,7 @@ namespace Icon.Matrix.Twitter
                     {
                         TenantId = task.TenantId,
                         CharacterId = task.CharacterId,
-                        TwitterAgentId = task.TwitterAgentId,
+                        TwitterAgentId = character.TwitterScrapeAgentId,
                         TaskName = task.TaskName,
                         Message = "Successfully imported tweets for character personas.",
                         LogLevel = "Information",
@@ -800,7 +799,7 @@ namespace Icon.Matrix.Twitter
                     {
                         TenantId = task?.TenantId ?? 0,
                         CharacterId = task?.CharacterId ?? Guid.Empty,
-                        TwitterAgentId = task?.TwitterAgentId,
+                        TwitterAgentId = character?.TwitterScrapeAgentId,
                         TaskName = task?.TaskName,
                         Message = "ImportCharacterPersonas failed.",
                         LogLevel = "Error",

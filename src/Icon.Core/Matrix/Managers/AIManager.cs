@@ -210,8 +210,8 @@ Sentiment score: Either positive or negative. Positive = 1 point, negative = 0 p
 Current context:
 {JsonConvert.SerializeObject(context, Formatting.Indented)}
 
-RULE: if the context contains TwitterPostInstruction, abide by that rule, but always return the specified JSON format.
-RULE: if the context contains TwitterPostExamples, use that as a guide for the type of responses to generate. But be original and relevant to the context if the examples allow it.
+RULE: if the context contains TwitterMentionReplyInstruction, abide by that rule, but always return the specified JSON format.
+RULE: if the context contains TwitterMentionReplyExamples, use that as a guide for the type of responses to generate. But be original and relevant to the context if the examples allow it.
 
 Remember:
 - Identify tags or return none like crypto, stocks, tech, love, music, etc.
@@ -250,7 +250,11 @@ The result response can only have this format
 
             Your task is to generate a tweet that is in line with the character's personality and the context provided.
             Be original and make sure the tweet is relevant to the context provided. 
-            Return only the tweet content, do not include any additional text or formatting.";
+
+            RULE: if the context contains TwitterAutoPostInstruction, abide by that rule, but always return the specified master rule format.
+            RULE: if the context contains TwitterAutoPostExamples, use that as a guide for the type of responses to generate. But be original and relevant to the context if the examples allow it.
+
+            MASTER RULE: Return only the tweet content, do not include any additional text or formatting.";
 
             return prompt;
         }

@@ -36,6 +36,7 @@
     <!-- Page Titles -->
     <text name="Page.Title.Memories">Memories</text>
     <text name="Page.Title.CharacterPersonas">Personas</text>
+    <text name="Page.Title.Characters">Characters</text>
 
     <!-- List Titles -->
     <text name="List.Title.MemoriesList">Memory navigator</text>
@@ -65,8 +66,10 @@
     <text name="FormField.Label.IsTwitterPostingEnabled">Is Twitter posting enabled</text>
     <text name="FormField.Label.TwitterCommType">Post type 1 API / 2 Scraper</text>
     <text name="FormField.Label.IsPromptingEnabled">Is prompting enabled</text>
-    <text name="FormField.Label.PromptInstructions.PromptInstruction">Prompt instruction</text>
-    <text name="FormField.Label.PromptInstructions.OutputExamples">Output examples</text>
+    <text name="FormField.Label.PromptInstructions.TwitterMentionReplyInstruction">Twitter mention reply instruction</text>
+    <text name="FormField.Label.PromptInstructions.TwitterMentionReplyExamples">Twitter mention reply examples</text>
+    <text name="FormField.Label.PromptInstructions.TwitterAutoPostInstruction">Twitter auto post instruction</text>
+    <text name="FormField.Label.PromptInstructions.TwitterAutoPostExamples">Twitter auto post examples</text>
 
     <text name="FormField.Label.CurrentBio.Bio">Bio</text>
     <text name="FormField.Label.CurrentBio.Personality">Personality</text>
