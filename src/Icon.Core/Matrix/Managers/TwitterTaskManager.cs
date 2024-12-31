@@ -293,7 +293,7 @@ namespace Icon.Matrix.Twitter
                         return;
                     }
 
-                    await _memoryManager.RunCharacterPostTweetPrompt(character.Id, AIModelType.Llama);
+                    await _memoryManager.RunCharacterPostTweetPrompt(character.Id, AIModelType.DirectOpenAI);
                 }
                 catch (Exception ex)
                 {

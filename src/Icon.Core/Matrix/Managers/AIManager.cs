@@ -1,5 +1,7 @@
 using System;
 using System.Collections.Generic;
+using System.Linq;
+using System.Text;
 using System.Text.Json;
 using System.Threading.Tasks;
 using Abp.Dependency;
@@ -27,57 +29,60 @@ namespace Icon.Matrix.AIManager
 
     public class AIManager : IAIManager, ITransientDependency
     {
-        private readonly IOpenAIService _openAIService;
+        private readonly IAzureOpenAIService _azureOpenAIService;
+        private readonly IDirectOpenAIService _directOpenAIService;
         private readonly ILlamaAIService _llamaAIService;
         private readonly IUnitOfWorkManager _unitOfWorkManager;
 
         public AIManager(
-            IOpenAIService openAIService,
+            IAzureOpenAIService azureOpenAIService,
+            IDirectOpenAIService directOpenAIService,
             ILlamaAIService llamaAIService,
             IUnitOfWorkManager unitOfWorkManager,
             IAbpSession abpSession
         )
         {
-            _openAIService = openAIService;
+            _azureOpenAIService = azureOpenAIService;
+            _directOpenAIService = directOpenAIService;
             _llamaAIService = llamaAIService;
             _unitOfWorkManager = unitOfWorkManager;
         }
 
         public async Task<string> GenerateMentionedPromptAsync(AICharacterMentionedContext context)
         {
-            await Task.CompletedTask;
             var prompt = BuildCharacterMentionedPrompt(context);
+            await Task.CompletedTask;
             return prompt;
         }
 
         public async Task<string> GeneratePostTweetPromptAsync(AICharacterPostTweetContext context)
         {
-            await Task.CompletedTask;
             var prompt = BuildCharacterPostTweetPrompt(context);
+            await Task.CompletedTask;
             return prompt;
         }
 
         public async Task<string> GeneratePostTweetResponseAsync(AICharacterPostTweetContext context, AIModelType modelType)
         {
-            if (modelType != AIModelType.OpenAI && modelType != AIModelType.Llama)
+            if (modelType != AIModelType.DirectOpenAI && modelType != AIModelType.AzureOpenAI && modelType != AIModelType.Llama)
             {
                 throw new NotSupportedException("Currently only OpenAI && Llama model is supported");
             }
 
             var prompt = BuildCharacterPostTweetPrompt(context);
-            float temperature = 0.7f;
-            int maxTokens = 500;
+            float temperature = 1.2f;
+            int maxTokens = 1500;
 
             string rawResponse = "";
 
             try
             {
-                if (modelType == AIModelType.OpenAI)
+                if (modelType == AIModelType.DirectOpenAI)
                 {
                     var openAIMessages = new List<ChatMessage>
                     {
-                        new SystemChatMessage("You are an AI assistant that is about to post a tweet."),
-                        new UserChatMessage(prompt)
+                        new SystemChatMessage(prompt),
+                        new UserChatMessage("Provide the next tweet to post")
                     };
                     var chatOptions = new ChatCompletionOptions
                     {
@@ -85,14 +90,14 @@ namespace Icon.Matrix.AIManager
                         Temperature = temperature
                     };
 
-                    rawResponse = await _openAIService.GetCompletionAsync(openAIMessages, chatOptions);
+                    rawResponse = await _directOpenAIService.GetCompletionAsync(openAIMessages, chatOptions);
                 }
                 else if (modelType == AIModelType.Llama)
                 {
                     var llamaMessages = new List<LlamaMessage>
                     {
-                        new LlamaMessage { Role = "system", Content = "You are an AI assistant that is about to post a tweet." },
-                        new LlamaMessage { Role = "user", Content = prompt }
+                        new LlamaMessage { Role = "system", Content = prompt },
+                        new LlamaMessage { Role = "user", Content = "Provide the next tweet to post" }
                     };
 
                     rawResponse = await _llamaAIService.GetCompletionAsync(llamaMessages, temperature, maxTokens);
@@ -110,26 +115,26 @@ namespace Icon.Matrix.AIManager
             AICharacterMentionedContext context,
             AIModelType modelType)
         {
-            if (modelType != AIModelType.OpenAI && modelType != AIModelType.Llama)
+            if (modelType != AIModelType.DirectOpenAI && modelType != AIModelType.AzureOpenAI && modelType != AIModelType.Llama)
             {
                 throw new NotSupportedException("Currently only OpenAI && Llama model is supported");
             }
 
             var prompt = BuildCharacterMentionedPrompt(context);
-            float temperature = 0.7f;
-            int maxTokens = 500;
+            float temperature = 1.2f;
+            int maxTokens = 1500;
 
             string rawResponse = "";
             var aiResponse = new AICharacterMentionedResponse();
 
             try
             {
-                if (modelType == AIModelType.OpenAI)
+                if (modelType == AIModelType.DirectOpenAI)
                 {
                     var openAIMessages = new List<ChatMessage>
                     {
-                        new SystemChatMessage("You are an AI assistant analyzing social media interactions."),
-                        new UserChatMessage(prompt)
+                        new SystemChatMessage(prompt),
+                        new UserChatMessage("Respond to mentioned tweet")
                     };
                     var chatOptions = new ChatCompletionOptions
                     {
@@ -137,14 +142,14 @@ namespace Icon.Matrix.AIManager
                         Temperature = temperature
                     };
 
-                    rawResponse = await _openAIService.GetCompletionAsync(openAIMessages, chatOptions);
+                    rawResponse = await _directOpenAIService.GetCompletionAsync(openAIMessages, chatOptions);
                 }
                 else if (modelType == AIModelType.Llama)
                 {
                     var llamaMessages = new List<LlamaMessage>
                     {
-                        new LlamaMessage { Role = "system", Content = "You are an AI assistant analyzing social media interactions." },
-                        new LlamaMessage { Role = "user", Content = prompt }
+                        new LlamaMessage { Role = "system", Content = prompt },
+                        new LlamaMessage { Role = "user", Content = "Respond to mentioned tweet" }
                     };
 
                     rawResponse = await _llamaAIService.GetCompletionAsync(llamaMessages, temperature, maxTokens);
@@ -245,62 +250,89 @@ The result response can only have this format
 
         private string BuildCharacterPostTweetPrompt(AICharacterPostTweetContext context)
         {
-            var prompt = $@"You are an AI Character that is about to post a tweet. You have the following context to work with:
-            {JsonConvert.SerializeObject(context, Formatting.Indented)}
+            // Convert your context into plain text
+            var formattedContext = ConvertJsonToPlainText(context);
 
-            Your task is to generate a tweet that is in line with the character's personality and the context provided.
-            Be original and make sure the tweet is relevant to the context provided. 
+            // Add random seed/key or date/time
+            var randomSeed = Guid.NewGuid().ToString("N");
+            var currentDateTime = DateTime.UtcNow.ToString("O");
 
-            RULE: if the context contains TwitterAutoPostInstruction, abide by that rule, but always return the specified master rule format.
-            RULE: if the context contains TwitterAutoPostExamples, use that as a guide for the type of responses to generate. But be original and relevant to the context if the examples allow it.
+            var prompt = $@"
+        You are an AI Character that is about to post a tweet.
+        (Random Key: {randomSeed})
+        Current UTC DateTime: {currentDateTime}
 
-            MASTER RULE: Return only the tweet content, do not include any additional text or formatting.";
+        You have the following context to work with:
+        {formattedContext}
+
+        Your task is to generate a tweet that is in line with the character's personality and the context provided.
+        Be original and make sure the tweet is relevant to the context provided.
+
+        RULE: if the context contains TwitterAutoPostInstruction, abide by that rule, but always return the specified master rule format.
+        RULE: if the context contains TwitterAutoPostExamples, use that as a guide for the type of responses to generate. 
+        But be original and relevant to the context if the examples allow it.
+
+        MASTER RULE: Return only the tweet content, do not include any additional text or formatting.
+    ";
 
             return prompt;
         }
+
+
+        private string ConvertJsonToPlainText(AICharacterPostTweetContext context)
+        {
+            var stringBuilder = new StringBuilder();
+
+            // Format the CharacterToActAsDto object
+            if (context.CharacterToActAs != null)
+            {
+                stringBuilder.AppendLine("CharacterToActAs:");
+                foreach (var property in context.CharacterToActAs.GetType().GetProperties())
+                {
+                    var value = property.GetValue(context.CharacterToActAs)?.ToString() ?? "null";
+                    stringBuilder.AppendLine($"  {property.Name}: {value}");
+                }
+            }
+
+            // Format the list of PreviousCharacterTweets
+            if (context.PreviousCharacterTweets != null && context.PreviousCharacterTweets.Count > 0)
+            {
+                stringBuilder.AppendLine("PreviousCharacterTweets:");
+                foreach (var tweet in context.PreviousCharacterTweets)
+                {
+                    stringBuilder.AppendLine("  -");
+                    stringBuilder.AppendLine($"    TweetContent: {tweet.TweetContent ?? "null"}");
+                    stringBuilder.AppendLine($"    TweetDate: {tweet.TweetDate?.ToString("o") ?? "null"}");
+                }
+            }
+
+            // Add the TwitterAutoPostInstruction
+            stringBuilder.AppendLine($"TwitterAutoPostInstruction: {context.TwitterAutoPostInstruction ?? "null"}");
+
+            // Shuffle the TwitterAutoPostExamples
+            if (!string.IsNullOrEmpty(context.TwitterAutoPostExamples))
+            {
+                stringBuilder.AppendLine("TwitterAutoPostExamples:");
+
+                // 1) Split the examples into a list
+                var examples = context.TwitterAutoPostExamples
+                    .Split(new[] { '\n' }, StringSplitOptions.RemoveEmptyEntries)
+                    .ToList();
+
+                // 2) Shuffle the list
+                var random = new Random();
+                examples = examples.OrderBy(_ => random.Next()).ToList();
+
+                // 3) Append them in randomized order
+                foreach (var example in examples)
+                {
+                    stringBuilder.AppendLine($"  - {example}");
+                }
+            }
+
+            return stringBuilder.ToString();
+        }
+
     }
 }
 
-
-// public async Task<string> GenerateResponse(string prompt, AIModelType modelType)
-// {
-//     if (modelType != AIModelType.OpenAI && modelType != AIModelType.Llama)
-//     {
-//         throw new NotSupportedException("Currently only OpenAI and Llama model is supported");
-//     }
-
-//     // Hard-coded or read from config
-//     float temperature = 0.7f;
-//     int maxTokens = 500;
-
-//     if (modelType == AIModelType.OpenAI)
-//     {
-//         // 1) Build ChatMessages (OpenAI)
-//         var messages = new List<ChatMessage>()
-//         {
-//             new SystemChatMessage("You are a helpful assistant."),
-//             new UserChatMessage(prompt)
-//         };
-
-//         var chatOptions = new ChatCompletionOptions
-//         {
-//             MaxOutputTokenCount = maxTokens,
-//             Temperature = temperature,
-//         };
-
-//         // 2) Send to OpenAI
-//         return await _openAIService.GetCompletionAsync(messages, chatOptions);
-//     }
-//     else
-//     {
-//         // 1) Build LlamaMessages
-//         var llamaMessages = new List<LlamaMessage>
-//         {
-//             new LlamaMessage { Role = "system", Content = "You are a helpful assistant." },
-//             new LlamaMessage { Role = "user", Content = prompt }
-//         };
-
-//         // 2) Send to Llama
-//         return await _llamaAIService.GetCompletionAsync(llamaMessages, temperature, maxTokens);
-//     }
-// }

@@ -11,6 +11,7 @@ using Icon.BaseManagement;
 using Icon.Matrix.Models;
 using Icon.Matrix.Characters.Forms;
 using Icon.Matrix.Enums;
+using Abp.Logging;
 
 namespace Icon.Matrix.Characters
 {
@@ -163,12 +164,26 @@ namespace Icon.Matrix.Characters
 
             modal.FooterButtons = new List<BaseModalFooterButtonDto>
             {
-                BaseModalButtonFactory.PostTestTweet(
+                BaseModalButtonFactory.TestAutoTweetPromptInput(
+                    backendEvent: new BaseBackendEventDto(
+                        backendServiceName: BaseHelper.GetServiceName(nameof(CharacterAppService)),
+                        backendMethodName: BaseHelper.GetMethodName(nameof(TestAutoTweetPromptInput))
+                    )
+                ),
+                BaseModalButtonFactory.TestAutoTweetPrompt(
+                    backendEvent: new BaseBackendEventDto(
+                        backendServiceName: BaseHelper.GetServiceName(nameof(CharacterAppService)),
+                        backendMethodName: BaseHelper.GetMethodName(nameof(TestAutoTweetPrompt))
+                    )
+                ),
+                BaseModalButtonFactory.TestAutoTweet(
                     backendEvent: new BaseBackendEventDto(
                         backendServiceName: BaseHelper.GetServiceName(nameof(CharacterAppService)),
                         backendMethodName: BaseHelper.GetMethodName(nameof(TestAutoTweet))
                     )
                 ),
+
+
                 BaseModalButtonFactory.Submit(
                     entity: nameof(Character),
                     backendEvent: new BaseBackendEventDto(
@@ -369,6 +384,73 @@ namespace Icon.Matrix.Characters
                 return TwitterCommType.Unset;
         }
 
+        // -------------------------------------------------
+        // TestAutoTweetPromptInput
+        // -------------------------------------------------
+        [HttpPost]
+        public async Task<BaseModalSubmittedDto> TestAutoTweetPromptInput(BaseModalDto modal)
+        {
+            var formModel = new CharacterFormModel();
+            modal.Form.UpdateDtoFromFieldValues(formModel);
+
+            if (formModel.CharacterId == Guid.Empty)
+                throw new UserFriendlyException("EntityId is required");
+
+            string promptResult = string.Empty;
+
+            try
+            {
+                promptResult = await _memoryManager.GetCharacterPostTweetPrompt(formModel.CharacterId);
+            }
+            catch (Exception ex)
+            {
+                throw new UserFriendlyException("Error creating prompt: " + ex.Message);
+            }
+
+            throw new UserFriendlyException(promptResult, LogSeverity.Debug);
+
+            return new BaseModalSubmittedDto
+            {
+                SuccessMessage = L("Modal.Submit.Message.TweetSentSuccessfully"),
+                RefreshListEvent = BaseListEvent.RefreshList
+            };
+        }
+
+
+        // -------------------------------------------------
+        // Test Auto Twwet Prompt
+        // -------------------------------------------------
+        [HttpPost]
+        public async Task<BaseModalSubmittedDto> TestAutoTweetPrompt(BaseModalDto modal)
+        {
+            var formModel = new CharacterFormModel();
+            modal.Form.UpdateDtoFromFieldValues(formModel);
+
+            if (formModel.CharacterId == Guid.Empty)
+                throw new UserFriendlyException("EntityId is required");
+
+            string promptResult = string.Empty;
+
+            try
+            {
+                promptResult = await _memoryManager.TestCharacterPostTweetPrompt(formModel.CharacterId, AIModelType.DirectOpenAI);
+            }
+            catch (Exception ex)
+            {
+                throw new UserFriendlyException("Error creating prompt: " + ex.Message);
+            }
+
+            throw new UserFriendlyException("Prompt result: " + promptResult, LogSeverity.Debug);
+
+            return new BaseModalSubmittedDto
+            {
+                SuccessMessage = L("Modal.Submit.Message.TweetSentSuccessfully"),
+                RefreshListEvent = BaseListEvent.RefreshList
+            };
+        }
+
+
+
 
         // -------------------------------------------------
         // Test Auto Post
@@ -385,7 +467,7 @@ namespace Icon.Matrix.Characters
 
             try
             {
-                await _memoryManager.RunCharacterPostTweetPrompt(formModel.CharacterId, AIModelType.Llama);
+                await _memoryManager.RunCharacterPostTweetPrompt(formModel.CharacterId, AIModelType.DirectOpenAI);
             }
             catch (Exception ex)
             {

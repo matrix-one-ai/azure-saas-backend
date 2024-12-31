@@ -80,7 +80,7 @@ namespace Icon.Matrix.Memories
 
             await _memoryManager.RunCharacterMentionedPrompt(
                 memoryId: input.EntityId.Value,
-                modelType: AIModelType.Llama
+                modelType: AIModelType.DirectOpenAI
             );
 
             return await GetModalEdit(input);

@@ -48,9 +48,10 @@ namespace Icon.Matrix.AIManager
             {
                 Model = "Meta-Llama-3-3-70B-Instruct",
                 Messages = llamaMessages,
-                // If your endpoint supports these:
                 Temperature = temperature,
-                MaxTokens = maxTokens
+                MaxTokens = maxTokens,
+                TopP = 0.9f,
+                TopK = 40
             };
 
             // Prepare JSON for POST
@@ -102,6 +103,11 @@ namespace Icon.Matrix.AIManager
         public float Temperature { get; set; }
         [JsonPropertyName("max_tokens")]
         public int MaxTokens { get; set; }
+        [JsonPropertyName("top_p")]
+        public float TopP { get; set; }
+
+        [JsonPropertyName("top_k")]
+        public int TopK { get; set; }
     }
 
     public class LlamaMessage

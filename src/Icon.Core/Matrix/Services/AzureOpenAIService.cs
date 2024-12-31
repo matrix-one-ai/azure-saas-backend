@@ -12,23 +12,25 @@ using OpenAI.Chat;
 
 namespace Icon.Matrix.AIManager
 {
-    public interface IOpenAIService
+    public interface IAzureOpenAIService
     {
         Task<string> GetCompletionAsync(List<ChatMessage> messages, ChatCompletionOptions options);
         Task<string> GetCompletionWithToolsAsync(string prompt);
     }
 
-    public class AzureOpenAIService : IOpenAIService, ITransientDependency
+    public class AzureOpenAIService : IAzureOpenAIService, ITransientDependency
     {
         private readonly AzureOpenAIClient _azureClient;
         private IConfigurationRoot _configuration;
+        private readonly string _model;
 
         public AzureOpenAIService(IAppConfigurationAccessor appConfigurationAccessor)
         {
             _configuration = appConfigurationAccessor.Configuration;
 
-            var endpoint = _configuration["OpenAI:Endpoint"];
-            var apiKey = _configuration["OpenAI:ApiKey"];
+            var endpoint = _configuration["AzureOpenAI:Endpoint"];
+            var apiKey = _configuration["AzureOpenAI:ApiKey"];
+            _model = _configuration["AzureOpenAI:Model"];
 
             if (string.IsNullOrWhiteSpace(endpoint) || string.IsNullOrWhiteSpace(apiKey))
             {
@@ -40,7 +42,7 @@ namespace Icon.Matrix.AIManager
 
         public async Task<string> GetCompletionAsync(List<ChatMessage> messages, ChatCompletionOptions options)
         {
-            var chatClient = _azureClient.GetChatClient("gpt-4o");
+            var chatClient = _azureClient.GetChatClient(_model);
 
             ChatCompletion completion = await chatClient.CompleteChatAsync(messages, options);
             return completion.Content[0].Text;

@@ -21,6 +21,8 @@ namespace Icon.Matrix
     {
         Task<AICharacterMentionedResponse> RunCharacterMentionedPrompt(Guid memoryId, AIModelType modelType);
         Task RunCharacterPostTweetPrompt(Guid characterId, AIModelType modelType);
+        Task<string> TestCharacterPostTweetPrompt(Guid characterId, AIModelType modelType);
+        Task<string> GetCharacterPostTweetPrompt(Guid characterId);
     }
     public partial class MemoryManager : IconServiceBase, IMemoryManager
     {
@@ -114,7 +116,64 @@ namespace Icon.Matrix
             };
         }
 
+        public async Task<string> GetCharacterPostTweetPrompt(Guid characterId)
+        {
+            AICharacterPostTweetContext context = null;
+            try
+            {
+                context = await GetPromptContextPostTweet(characterId);
+            }
+            catch (Exception ex)
+            {
+                Logger.Error(ex.Message);
+                throw new UserFriendlyException("An error occurred while fetching the prompt context.", ex);
+            }
+            try
+            {
+                var prompt = await _aiManager.GeneratePostTweetPromptAsync(context);
+                return prompt;
+            }
+            catch (Exception ex)
+            {
+                Logger.Error(ex.Message);
+                throw new UserFriendlyException("An error occurred while generating the prompt.", ex);
+            }
+        }
 
+        public async Task<string> TestCharacterPostTweetPrompt(Guid characterId, AIModelType modelType)
+        {
+            AICharacterPostTweetContext context = null;
+            try
+            {
+                context = await GetPromptContextPostTweet(characterId);
+            }
+            catch (Exception ex)
+            {
+                Logger.Error(ex.Message);
+                throw new UserFriendlyException("An error occurred while fetching the prompt context.", ex);
+            }
+            try
+            {
+                var response = await _aiManager.GeneratePostTweetResponseAsync(context, modelType);
+                var character = await _characterManager.GetCharacterById(characterId);
+
+                if (response.StartsWith("\""))
+                {
+                    response = response.Substring(1);
+                }
+                if (response.EndsWith("\""))
+                {
+                    response = response.Substring(0, response.Length - 1);
+                }
+
+                return response;
+            }
+            catch (Exception ex)
+            {
+                Logger.Error(ex.Message);
+                throw new UserFriendlyException("An error occurred while generating the response.", ex);
+            }
+        }
         public async Task RunCharacterPostTweetPrompt(Guid characterId, AIModelType modelType)
         {
             AICharacterPostTweetContext context = null;

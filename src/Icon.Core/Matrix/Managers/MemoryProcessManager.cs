@@ -390,7 +390,7 @@ namespace Icon.Matrix
             await LogAsync(process.Id, stepId, "Thinking about what i will respond... ", "Thought");
             if (memory.Character.IsPromptingEnabled)
             {
-                var response = await RunCharacterMentionedPrompt(memoryId: memory.Id, AIModelType.Llama);
+                var response = await RunCharacterMentionedPrompt(memoryId: memory.Id, AIModelType.DirectOpenAI);
 
                 if (response.IsSuccess)
                 {

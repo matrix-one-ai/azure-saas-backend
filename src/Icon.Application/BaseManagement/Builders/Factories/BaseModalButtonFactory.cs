@@ -20,11 +20,35 @@ namespace Icon.BaseManagement
             SwitchModalEvent = switchModalEvent
         };
 
-        public static BaseModalFooterButtonDto PostTestTweet(BaseBackendEventDto backendEvent) => new BaseModalFooterButtonDto()
+        public static BaseModalFooterButtonDto TestAutoTweet(BaseBackendEventDto backendEvent) => new BaseModalFooterButtonDto()
         {
             Type = nameof(PostTweet),
             Text = "Modal.FooterButton.PostTweet",
             Icon = BaseIconOptions.PostTweet,
+            Class = "btn btn-light-primary btn-outline-primary fw-bold",
+            Event = "submitModal",
+            IsVisible = true,
+            Alignment = BaseAlignmentOptions.Left,
+            BackendEvent = backendEvent
+        };
+
+        public static BaseModalFooterButtonDto TestAutoTweetPrompt(BaseBackendEventDto backendEvent) => new BaseModalFooterButtonDto()
+        {
+            Type = nameof(PostTweet),
+            Text = "Modal.FooterButton.TestTweetPrompt",
+            Icon = BaseIconOptions.Generate,
+            Class = "btn btn-light-primary btn-outline-primary fw-bold",
+            Event = "submitModal",
+            IsVisible = true,
+            Alignment = BaseAlignmentOptions.Left,
+            BackendEvent = backendEvent
+        };
+
+        public static BaseModalFooterButtonDto TestAutoTweetPromptInput(BaseBackendEventDto backendEvent) => new BaseModalFooterButtonDto()
+        {
+            Type = nameof(PostTweet),
+            Text = "Modal.FooterButton.TestTweetPromptInput",
+            Icon = BaseIconOptions.Generate,
             Class = "btn btn-light-primary btn-outline-primary fw-bold",
             Event = "submitModal",
             IsVisible = true,

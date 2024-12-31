@@ -109,7 +109,9 @@
     <text name="Modal.FooterButton.SubmitMemory">Update memory</text>
     <text name="Modal.FooterButton.GeneratePrompt">Generate prompt</text>
     <text name="Modal.FooterButton.PostTweet">Post tweet</text>
-    <text name="Modal.FooterButton.SubmitCharacter">Update character</text>
+    <text name="Modal.FooterButton.SubmitCharacter">Update</text>
+    <text name="Modal.FooterButton.TestTweetPrompt">Prompt response</text>
+    <text name="Modal.FooterButton.TestTweetPromptInput">Prompt input</text>
 
 
     <!-- Modal Messages -->
