@@ -21,7 +21,7 @@ namespace Icon.Matrix.Twitter
         Task<List<TwitterScraperTweetResponse>> GetTweetsByKeywordsAsync(string twitterAgentId, List<string> keywords, int limit = 5);
         Task<List<TwitterScraperTweetResponse>> GetUserMentionsAsync(string twitterAgentId, string username, int limit = 5);
         Task<List<string>> GetTrendingTopicsAsync(string twitterAgentId, int limit = 5);
-        // Task<UserProfile> GetUserProfileAsync(string twitterAgentId, string username);
+        Task<TwitterScraperUserProfileResponse> GetUserProfileAsync(string twitterAgentId, string username);
         Task<List<TwitterScraperTweetResponse>> GetRepliesToTweetAsync(string twitterAgentId, string tweetId, int limit = 5);
 
         Task<TwitterScraperPostTweetResponse> PostScraperTweetAsync(string twitterAgentId, string text);
@@ -144,13 +144,13 @@ namespace Icon.Matrix.Twitter
             );
         }
 
-        // public Task<UserProfile> GetUserProfileAsync(string twitterAgentId, string username)
-        // {
-        //     return ExecuteRequestAsync<UserProfile>(
-        //         () => _httpClient.PostAsJsonAsync("/getScraperUserProfileData", new { agentId = twitterAgentId, username }),
-        //         $"GetUserProfileAsync for username: {username}"
-        //     );
-        // }
+        public Task<TwitterScraperUserProfileResponse> GetUserProfileAsync(string twitterAgentId, string username)
+        {
+            return ExecuteRequestAsync<TwitterScraperUserProfileResponse>(
+                () => _httpClient.PostAsJsonAsync("/getScraperUserProfileData", new { agentId = twitterAgentId, username }),
+                $"GetUserProfileAsync for username: {username}"
+            );
+        }
 
         public Task<List<TwitterScraperTweetResponse>> GetRepliesToTweetAsync(string twitterAgentId, string tweetId, int limit = 5)
         {

@@ -32,7 +32,6 @@ namespace Icon.Matrix.CharacterPersonas
             IRepository<CharacterPersonaTwitterRank, Guid> cpTwitterRankRepository,
             ISharedSqlRepository<CharacterPersonaTwitterRank> cpTwitterRankSqlRepository)
         {
-
             _characterpersonaRepository = characterpersonaRepository;
             _cpTwitterRankRepository = cpTwitterRankRepository;
             _cpTwitterRankSqlRepository = cpTwitterRankSqlRepository;
@@ -73,6 +72,7 @@ namespace Icon.Matrix.CharacterPersonas
             {
                 query = query
                     .Include(x => x.TwitterRank)
+                    .Include(x => x.TwitterProfile)
                     .Include(x => x.Character)
                     .Include(x => x.Persona)
                         .ThenInclude(x => x.Platforms)
@@ -111,7 +111,7 @@ namespace Icon.Matrix.CharacterPersonas
                     Id = cp.Persona.Id,
                     Name = cp.Persona.Name,
                     TwitterHandle = cp.Persona.Platforms?.FirstOrDefault(x => x.Platform?.Name == "Twitter")?.PlatformPersonaId,
-                    TwitterAvatarUrl = GetTwitterAvatarUrl(cp.Persona?.Platforms?.FirstOrDefault(x => x.Platform?.Name == "Twitter")?.PlatformPersonaId)
+                    TwitterAvatarUrl = cp.TwitterProfile?.Avatar
                 },
                 TwitterRank = ObjectMapper.Map<CharacterPersonaTwitterRankDto>(cp.TwitterRank),
 
@@ -127,20 +127,19 @@ namespace Icon.Matrix.CharacterPersonas
             }).ToList();
         }
 
-        private string GetTwitterAvatarUrl(string platformPersonaId)
-        {
-            if (platformPersonaId.IsNullOrEmpty())
-            {
-                return null;
-            }
+        // private string GetTwitterAvatarUrl(string platformPersonaId)
+        // {
+        //     if (platformPersonaId.IsNullOrEmpty())
+        //     {
+        //         return null;
+        //     }
 
-            // if id starts with @, remove it
-            var username = platformPersonaId.StartsWith("@") ? platformPersonaId.Substring(1) : platformPersonaId;
-            var url = $"https://x.com/{username}/photo";
+        //     // if id starts with @, remove it
+        //     var username = platformPersonaId.StartsWith("@") ? platformPersonaId.Substring(1) : platformPersonaId;
+        //     var url = $"https://x.com/{username}/photo";
 
-            return url;
-        }
-
+        //     return url;
+        // }
 
         private List<CharacterPersonaRankListDto> ApplyRowSettings(List<CharacterPersonaRankListDto> ranks)
         {

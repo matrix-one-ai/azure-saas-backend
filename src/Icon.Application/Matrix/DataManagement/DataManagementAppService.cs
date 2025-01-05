@@ -72,6 +72,7 @@ namespace Icon.Matrix
             AbpSession.Use(2, 3);
             await _twitterManager.ProcessCharacterTweetImports();
             await _twitterManager.ProcessCharacterTweetsStorage();
+            await _twitterManager.ProcessMissingTwitterProfiles();
         }
 
         [HttpPost]

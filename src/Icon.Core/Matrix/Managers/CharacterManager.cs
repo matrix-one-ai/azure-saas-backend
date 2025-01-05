@@ -13,6 +13,7 @@ using Microsoft.Extensions.Configuration;
 using Icon.Configuration;
 using System.Collections.Generic;
 using Icon.Matrix.Models;
+using Icon.Matrix.Twitter;
 
 
 namespace Icon.Matrix
@@ -42,6 +43,7 @@ namespace Icon.Matrix
         private readonly IRepository<PersonaPlatform, Guid> _personaPlatformRepository;
         private readonly IRepository<Persona, Guid> _personaRepository;
 
+        private readonly ITwitterManager _twitterManager;
         private readonly IUnitOfWorkManager _unitOfWorkManager;
         private readonly IAbpSession _abpSession;
         private IConfigurationRoot _configuration;
@@ -54,6 +56,7 @@ namespace Icon.Matrix
             IRepository<Platform, Guid> platformRepository,
             IRepository<PersonaPlatform, Guid> personaPlatformRepository,
             IRepository<Persona, Guid> personaRepository,
+
 
             IUnitOfWorkManager unitOfWorkManager,
             IAbpSession abpSession,
@@ -233,6 +236,7 @@ namespace Icon.Matrix
         {
             var characterPersona = await _characterPersonaRepository
                 .GetAll()
+                .Include(p => p.TwitterProfile)
                 .Include(p => p.Character)
 
                 .Include(p => p.Persona)

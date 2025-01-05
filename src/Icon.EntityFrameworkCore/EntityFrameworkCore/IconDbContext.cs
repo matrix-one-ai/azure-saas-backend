@@ -39,6 +39,7 @@ namespace Icon.EntityFrameworkCore
         public virtual DbSet<CharacterPlatform> CharacterPlatforms { get; set; }
         public virtual DbSet<CharacterPersona> CharacterPersonas { get; set; }
         public virtual DbSet<CharacterPersonaTwitterRank> CharacterPersonaTwitterRanks { get; set; }
+        public virtual DbSet<CharacterPersonaTwitterProfile> CharacterPersonaTwitterProfiles { get; set; }
 
         public virtual DbSet<Memory> Memories { get; set; }
         public virtual DbSet<MemoryType> MemoryTypes { get; set; }

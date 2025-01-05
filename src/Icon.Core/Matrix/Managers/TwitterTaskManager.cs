@@ -19,6 +19,7 @@ namespace Icon.Matrix.Twitter
         Task ProcessCharacterTweetImports();
         Task ProcessCharacterTweetsStorage();
         Task ProcessCharacterPostTweet();
+        Task ProcessMissingTwitterProfiles();
     }
 
     public class TwitterTaskManager : ITwitterTaskManager, ITransientDependency
@@ -170,6 +171,145 @@ namespace Icon.Matrix.Twitter
                 );
 
                 await UpdateImportTweetExportedStatus(tweet);
+            }
+        }
+
+        public async Task ProcessMissingTwitterProfiles()
+        {
+            var characters = await _characterRepository
+                .GetAll()
+                .Where(c => c.IsTwitterScrapingEnabled && !string.IsNullOrEmpty(c.TwitterScrapeAgentId))
+                .ToListAsync();
+
+            foreach (var character in characters)
+            {
+                var characterPersonas = await _characterPersonaRepository
+                    .GetAll()
+                    .Include(cp => cp.TwitterProfile)
+                    .Include(cp => cp.Persona)
+                    .ThenInclude(p => p.Platforms)
+                    .ThenInclude(p => p.Platform)
+                    .Where(cp => cp.CharacterId == character.Id && (cp.TwitterProfile == null || cp.TwitterProfile.LastImportDate < DateTime.UtcNow.AddDays(-10)))
+                    .Take(50)
+                    .ToListAsync();
+
+                if (characterPersonas == null || !characterPersonas.Any())
+                {
+                    continue;
+                }
+
+                var imported = 0;
+                var limit = new Random().Next(1, 10);
+                var randomDelay = new Random().Next(300, 1500);
+
+                foreach (var cpersona in characterPersonas)
+                {
+                    if (imported >= limit)
+                    {
+                        break;
+                    }
+
+                    if (cpersona.Persona == null)
+                    {
+                        continue;
+                    }
+
+                    if (cpersona.Persona.Platforms == null || !cpersona.Persona.Platforms.Any())
+                    {
+                        continue;
+                    }
+
+                    var twitterPlatform = cpersona.Persona.Platforms.FirstOrDefault(p => p.Platform.Name == "Twitter");
+
+                    if (twitterPlatform == null)
+                    {
+                        continue;
+                    }
+
+                    var userSearch = twitterPlatform.PlatformPersonaId.StartsWith("@")
+                        ? twitterPlatform.PlatformPersonaId.Substring(1)
+                        : twitterPlatform.PlatformPersonaId;
+
+                    using (var uow = _unitOfWorkManager.Begin())
+                    {
+                        TwitterScraperUserProfileResponse twitterProfile = null;
+                        try
+                        {
+                            twitterProfile = await _twitterCommunicationService.GetUserProfileAsync(character.TwitterScrapeAgentId, userSearch);
+                        }
+                        catch (Exception ex)
+                        {
+                            var errorLog = new TwitterImportLog
+                            {
+                                TenantId = character.TenantId,
+                                CharacterId = character.Id,
+                                TwitterAgentId = character.TwitterScrapeAgentId,
+                                TaskName = "ProcessMissingTwitterProfiles",
+                                Message = "GetUserProfileAsync failed.",
+                                LogLevel = "Error",
+                                Exception = ex.ToString(),
+                                ExceptionMessage = ex.Message,
+                                LoggedAt = DateTime.UtcNow
+                            };
+                            await _twitterImportLogRepository.InsertAsync(errorLog);
+                        }
+
+                        if (twitterProfile == null)
+                        {
+                            cpersona.TwitterProfile = new CharacterPersonaTwitterProfile
+                            {
+                                CharacterPersonaId = cpersona.Id,
+                                LastImportDate = DateTime.UtcNow
+                            };
+                        }
+                        else
+                        {
+                            var successLog = new TwitterImportLog
+                            {
+                                TenantId = character.TenantId,
+                                CharacterId = character.Id,
+                                TwitterAgentId = character.TwitterScrapeAgentId,
+                                TaskName = "ProcessMissingTwitterProfiles",
+                                Message = "Successfully fetched Twitter profile.",
+                                LogLevel = "Information",
+                                LoggedAt = DateTime.UtcNow
+                            };
+                            await _twitterImportLogRepository.InsertAsync(successLog);
+
+                            cpersona.TwitterProfile = new CharacterPersonaTwitterProfile
+                            {
+                                CharacterPersonaId = cpersona.Id,
+                                Avatar = twitterProfile.Avatar,
+                                Biography = twitterProfile.Biography,
+                                FollowersCount = twitterProfile.FollowersCount,
+                                FollowingCount = twitterProfile.FollowingCount,
+                                FriendsCount = twitterProfile.FriendsCount,
+                                MediaCount = twitterProfile.MediaCount,
+                                IsPrivate = twitterProfile.IsPrivate,
+                                IsVerified = twitterProfile.IsVerified,
+                                LikesCount = twitterProfile.LikesCount,
+                                ListedCount = twitterProfile.ListedCount,
+                                Location = twitterProfile.Location,
+                                Name = twitterProfile.Name,
+                                PinnedTweetIds = twitterProfile.PinnedTweetIds,
+                                TweetsCount = twitterProfile.TweetsCount,
+                                Url = twitterProfile.Url,
+                                UserId = twitterProfile.UserId,
+                                Username = twitterProfile.Username,
+                                IsBlueVerified = twitterProfile.IsBlueVerified,
+                                CanDm = twitterProfile.CanDm,
+                                Joined = twitterProfile.Joined,
+                                LastImportDate = DateTime.UtcNow
+                            };
+                        }
+
+                        imported++;
+                        await Task.Delay(randomDelay);
+                        await _characterPersonaRepository.UpdateAsync(cpersona);
+                        await _unitOfWorkManager.Current.SaveChangesAsync();
+                        await uow.CompleteAsync();
+                    }
+                }
             }
         }
 

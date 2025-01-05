@@ -129,6 +129,7 @@ namespace Icon.Matrix.Models
         public bool ShouldImportNewPosts { get; set; }
         public bool PersonaIsAi { get; set; }
         public CharacterPersonaTwitterRank TwitterRank { get; set; }
+        public CharacterPersonaTwitterProfile TwitterProfile { get; set; }
     }
 
     public class PersonaPlatform : Entity<Guid>, IMustHaveTenant
@@ -448,6 +449,35 @@ namespace Icon.Matrix.Models
 
         // If you want to store the original TweetId as well.
         public virtual string TweetId { get; set; }
+    }
+
+
+    public class CharacterPersonaTwitterProfile : Entity<Guid>, IMustHaveTenant
+    {
+        public int TenantId { get; set; }
+        public Guid? CharacterPersonaId { get; set; }
+        public string Avatar { get; set; }
+        public string Biography { get; set; }
+        public int? FollowersCount { get; set; }
+        public int? FollowingCount { get; set; }
+        public int? FriendsCount { get; set; }
+        public int? MediaCount { get; set; }
+        public bool? IsPrivate { get; set; }
+        public bool? IsVerified { get; set; }
+        public int? LikesCount { get; set; }
+        public int? ListedCount { get; set; }
+        public string Location { get; set; }
+        public string Name { get; set; }
+        public List<string> PinnedTweetIds { get; set; }
+        public int? TweetsCount { get; set; }
+        public string Url { get; set; }
+        public string UserId { get; set; }
+        public string Username { get; set; }
+        public bool? IsBlueVerified { get; set; }
+        public bool? CanDm { get; set; }
+        public DateTime? Joined { get; set; }
+
+        public DateTime? LastImportDate { get; set; }
     }
 
 }

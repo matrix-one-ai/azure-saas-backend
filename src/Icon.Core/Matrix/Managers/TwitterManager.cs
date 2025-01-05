@@ -17,6 +17,7 @@ namespace Icon.Matrix.Twitter
     {
         Task<TwitterApiPostTweetResponse> ReplyToTweetAsync(Character character, string tweetId, string text);
         Task<TwitterApiPostTweetResponse> PostTweetAsync(Character character, string text);
+        //Task<TwitterScraperUserProfileResponse> GetUserProfileAsync(Character character, string username);
     }
 
     public class TwitterManager : ITwitterManager, ITransientDependency
@@ -94,6 +95,25 @@ namespace Icon.Matrix.Twitter
                 throw new Exception($"Twitter communication type for character {character.Id} is missing.");
             }
         }
+
+        // public async Task<TwitterScraperUserProfileResponse> GetUserProfileAsync(Character character, string username)
+        // {
+        //     ValidateCharacter(character);
+        //     ValidateUserName(username);
+
+        //     var twitterAgentId = character.TwitterScrapeAgentId;
+        //     var result = await _twitterCommunicationService.GetUserProfileAsync(twitterAgentId, username);
+
+        //     return result;
+        // }
+
+        // private void ValidateUserName(string username)
+        // {
+        //     if (string.IsNullOrEmpty(username))
+        //     {
+        //         throw new Exception("Username is missing.");
+        //     }
+        // }
 
         private void ValidateCharacter(Character character)
         {
