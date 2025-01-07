@@ -127,6 +127,8 @@ namespace Icon.Matrix.Models
         public bool ShouldRespondNewPosts { get; set; }
         public bool ShouldRespondMentions { get; set; }
         public bool ShouldImportNewPosts { get; set; }
+        public bool WelcomeMessageSent { get; set; }
+        public DateTime? WelcomeMessageSentAt { get; set; }
         public bool PersonaIsAi { get; set; }
         public CharacterPersonaTwitterRank TwitterRank { get; set; }
         public CharacterPersonaTwitterProfile TwitterProfile { get; set; }
@@ -479,5 +481,105 @@ namespace Icon.Matrix.Models
 
         public DateTime? LastImportDate { get; set; }
     }
+
+    public class RaydiumPair : Entity<Guid>
+    {
+        public DateTime CreationTime { get; set; }
+
+        public long Slot { get; set; }
+        public string Signature { get; set; }
+        public long BlockTime { get; set; }
+        public string SourceExchange { get; set; }
+        public string AmmAccount { get; set; }
+
+        public string BaseTokenAccount { get; set; }
+        public int? BaseTokenDecimals { get; set; }
+        public string BaseTokenSupply { get; set; }
+        public string BaseTokenName { get; set; }
+        public string BaseTokenSymbol { get; set; }
+        public string BaseTokenLogo { get; set; }
+        public string BaseTokenLiquidityAdded { get; set; }
+
+        public string QuoteTokenAccount { get; set; }
+        public string QuoteTokenLiquidityAdded { get; set; }
+
+        public DateTime? LastPoolUpdate { get; set; }
+    }
+
+
+    public class CoingeckoPoolUpdate : Entity<Guid>
+    {
+
+        public Guid? RaydiumPairId { get; set; }
+
+        public DateTime CreationTime { get; set; } = DateTime.UtcNow;
+
+        // Coingecko pool fields:
+        public string PoolId { get; set; }
+        public string PoolType { get; set; }
+
+        public string BaseTokenPriceUsd { get; set; }
+        public string BaseTokenPriceNativeCurrency { get; set; }
+        public string QuoteTokenPriceUsd { get; set; }
+        public string QuoteTokenPriceNativeCurrency { get; set; }
+        public string BaseTokenPriceQuoteToken { get; set; }
+        public string QuoteTokenPriceBaseToken { get; set; }
+
+        public string Address { get; set; }
+        public string Name { get; set; }
+        public DateTime? PoolCreatedAt { get; set; }
+        public string TokenPriceUsd { get; set; }
+        public string FdvUsd { get; set; }
+        public string MarketCapUsd { get; set; }
+
+        // Price changes:
+        public string PriceChangeM5 { get; set; }
+        public string PriceChangeH1 { get; set; }
+        public string PriceChangeH6 { get; set; }
+        public string PriceChangeH24 { get; set; }
+
+        // Transactions:
+        public int? M5Buys { get; set; }
+        public int? M5Sells { get; set; }
+        public int? M5Buyers { get; set; }
+        public int? M5Sellers { get; set; }
+
+        public int? M15Buys { get; set; }
+        public int? M15Sells { get; set; }
+        public int? M15Buyers { get; set; }
+        public int? M15Sellers { get; set; }
+
+        public int? M30Buys { get; set; }
+        public int? M30Sells { get; set; }
+        public int? M30Buyers { get; set; }
+        public int? M30Sellers { get; set; }
+
+        public int? H1Buys { get; set; }
+        public int? H1Sells { get; set; }
+        public int? H1Buyers { get; set; }
+        public int? H1Sellers { get; set; }
+
+        public int? H24Buys { get; set; }
+        public int? H24Sells { get; set; }
+        public int? H24Buyers { get; set; }
+        public int? H24Sellers { get; set; }
+
+        // Volume (USD)
+        public string VolumeM5 { get; set; }
+        public string VolumeH1 { get; set; }
+        public string VolumeH6 { get; set; }
+        public string VolumeH24 { get; set; }
+
+        public string ReserveInUsd { get; set; }
+
+        // Relationship “IDs”
+        public string BaseTokenId { get; set; }
+        public string QuoteTokenId { get; set; }
+        public string DexId { get; set; }
+    }
+
+
+
+
 
 }

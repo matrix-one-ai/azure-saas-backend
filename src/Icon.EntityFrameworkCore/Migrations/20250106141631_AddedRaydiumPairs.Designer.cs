@@ -4,6 +4,7 @@ using Icon.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
 using Microsoft.EntityFrameworkCore.Metadata;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 
 #nullable disable
@@ -11,9 +12,11 @@ using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 namespace Icon.Migrations
 {
     [DbContext(typeof(IconDbContext))]
-    partial class IconDbContextModelSnapshot : ModelSnapshot
+    [Migration("20250106141631_AddedRaydiumPairs")]
+    partial class AddedRaydiumPairs
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        /// <inheritdoc />
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
@@ -2266,12 +2269,6 @@ namespace Icon.Migrations
                     b.Property<int>("TenantId")
                         .HasColumnType("int");
 
-                    b.Property<bool>("WelcomeMessageSent")
-                        .HasColumnType("bit");
-
-                    b.Property<DateTime?>("WelcomeMessageSentAt")
-                        .HasColumnType("datetime2");
-
                     b.HasKey("Id");
 
                     b.HasIndex("CharacterId");
@@ -2500,161 +2497,6 @@ namespace Icon.Migrations
                     b.HasIndex("TopicId");
 
                     b.ToTable("CharacterTopics");
-                });
-
-            modelBuilder.Entity("Icon.Matrix.Models.CoingeckoPoolUpdate", b =>
-                {
-                    b.Property<Guid>("Id")
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("uniqueidentifier");
-
-                    b.Property<string>("Address")
-                        .HasColumnType("nvarchar(max)");
-
-                    b.Property<string>("BaseTokenId")
-                        .HasColumnType("nvarchar(max)");
-
-                    b.Property<string>("BaseTokenPriceNativeCurrency")
-                        .HasColumnType("nvarchar(max)");
-
-                    b.Property<string>("BaseTokenPriceQuoteToken")
-                        .HasColumnType("nvarchar(max)");
-
-                    b.Property<string>("BaseTokenPriceUsd")
-                        .HasColumnType("nvarchar(max)");
-
-                    b.Property<DateTime>("CreationTime")
-                        .HasColumnType("datetime2");
-
-                    b.Property<string>("DexId")
-                        .HasColumnType("nvarchar(max)");
-
-                    b.Property<string>("FdvUsd")
-                        .HasColumnType("nvarchar(max)");
-
-                    b.Property<int?>("H1Buyers")
-                        .HasColumnType("int");
-
-                    b.Property<int?>("H1Buys")
-                        .HasColumnType("int");
-
-                    b.Property<int?>("H1Sellers")
-                        .HasColumnType("int");
-
-                    b.Property<int?>("H1Sells")
-                        .HasColumnType("int");
-
-                    b.Property<int?>("H24Buyers")
-                        .HasColumnType("int");
-
-                    b.Property<int?>("H24Buys")
-                        .HasColumnType("int");
-
-                    b.Property<int?>("H24Sellers")
-                        .HasColumnType("int");
-
-                    b.Property<int?>("H24Sells")
-                        .HasColumnType("int");
-
-                    b.Property<int?>("M15Buyers")
-                        .HasColumnType("int");
-
-                    b.Property<int?>("M15Buys")
-                        .HasColumnType("int");
-
-                    b.Property<int?>("M15Sellers")
-                        .HasColumnType("int");
-
-                    b.Property<int?>("M15Sells")
-                        .HasColumnType("int");
-
-                    b.Property<int?>("M30Buyers")
-                        .HasColumnType("int");
-
-                    b.Property<int?>("M30Buys")
-                        .HasColumnType("int");
-
-                    b.Property<int?>("M30Sellers")
-                        .HasColumnType("int");
-
-                    b.Property<int?>("M30Sells")
-                        .HasColumnType("int");
-
-                    b.Property<int?>("M5Buyers")
-                        .HasColumnType("int");
-
-                    b.Property<int?>("M5Buys")
-                        .HasColumnType("int");
-
-                    b.Property<int?>("M5Sellers")
-                        .HasColumnType("int");
-
-                    b.Property<int?>("M5Sells")
-                        .HasColumnType("int");
-
-                    b.Property<string>("MarketCapUsd")
-                        .HasColumnType("nvarchar(max)");
-
-                    b.Property<string>("Name")
-                        .HasColumnType("nvarchar(max)");
-
-                    b.Property<DateTime?>("PoolCreatedAt")
-                        .HasColumnType("datetime2");
-
-                    b.Property<string>("PoolId")
-                        .HasColumnType("nvarchar(max)");
-
-                    b.Property<string>("PoolType")
-                        .HasColumnType("nvarchar(max)");
-
-                    b.Property<string>("PriceChangeH1")
-                        .HasColumnType("nvarchar(max)");
-
-                    b.Property<string>("PriceChangeH24")
-                        .HasColumnType("nvarchar(max)");
-
-                    b.Property<string>("PriceChangeH6")
-                        .HasColumnType("nvarchar(max)");
-
-                    b.Property<string>("PriceChangeM5")
-                        .HasColumnType("nvarchar(max)");
-
-                    b.Property<string>("QuoteTokenId")
-                        .HasColumnType("nvarchar(max)");
-
-                    b.Property<string>("QuoteTokenPriceBaseToken")
-                        .HasColumnType("nvarchar(max)");
-
-                    b.Property<string>("QuoteTokenPriceNativeCurrency")
-                        .HasColumnType("nvarchar(max)");
-
-                    b.Property<string>("QuoteTokenPriceUsd")
-                        .HasColumnType("nvarchar(max)");
-
-                    b.Property<Guid?>("RaydiumPairId")
-                        .HasColumnType("uniqueidentifier");
-
-                    b.Property<string>("ReserveInUsd")
-                        .HasColumnType("nvarchar(max)");
-
-                    b.Property<string>("TokenPriceUsd")
-                        .HasColumnType("nvarchar(max)");
-
-                    b.Property<string>("VolumeH1")
-                        .HasColumnType("nvarchar(max)");
-
-                    b.Property<string>("VolumeH24")
-                        .HasColumnType("nvarchar(max)");
-
-                    b.Property<string>("VolumeH6")
-                        .HasColumnType("nvarchar(max)");
-
-                    b.Property<string>("VolumeM5")
-                        .HasColumnType("nvarchar(max)");
-
-                    b.HasKey("Id");
-
-                    b.ToTable("CoingeckoPoolUpdates");
                 });
 
             modelBuilder.Entity("Icon.Matrix.Models.Memory", b =>
@@ -3111,9 +2953,6 @@ namespace Icon.Migrations
                         .HasColumnType("bigint");
 
                     b.Property<DateTime>("CreationTime")
-                        .HasColumnType("datetime2");
-
-                    b.Property<DateTime?>("LastPoolUpdate")
                         .HasColumnType("datetime2");
 
                     b.Property<string>("QuoteTokenAccount")

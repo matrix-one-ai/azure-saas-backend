@@ -227,6 +227,8 @@ namespace Icon.Matrix
                 .Select(s => s.StepName)
                 .ToHashSet();
 
+            await Task.CompletedTask;
+
             return dependencies.All(d => completedSteps.Contains(d));
         }
 

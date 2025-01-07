@@ -91,6 +91,18 @@ namespace Icon.Matrix
                         if (response.CryptocoinsFound != null && response.CryptocoinsFound.Count > 0)
                         {
                             memory.Tags = string.Join(", ", response.CryptocoinsFound);
+                            if (string.IsNullOrEmpty(memory.Tags) || memory.Tags.ToLower().Contains("plant"))
+                            {
+                                memory.MemoryStatsTwitter.NoveltyScore = 0;
+                            }
+                            else
+                            {
+                                memory.MemoryStatsTwitter.NoveltyScore = 1;
+                            }
+                        }
+                        else
+                        {
+                            memory.MemoryStatsTwitter.NoveltyScore = 0;
                         }
 
                         await UpdateMemory(memory);
@@ -256,6 +268,7 @@ namespace Icon.Matrix
                         .ThenInclude(p => p.Platform)
                     .Where(x => x.PlatformInteractionParentId == memory.PlatformInteractionParentId)
                     .OrderByDescending(x => x.PlatformInteractionDate)
+                    .Take(15)
                     .ToListAsync();
 
                 var lastTweetsByUser = await _memoryRepository.GetAll()

@@ -48,7 +48,7 @@ namespace Icon.Matrix.CharacterPersonas
             filteredQuery = ApplyFiltering(query, input);
 
             var characterPersonas = await filteredQuery
-                .OrderBy("TwitterRank.Rank")
+                .OrderBy(input.Sorting)
                 .PageBy(input)
                 .ToListAsync();
 

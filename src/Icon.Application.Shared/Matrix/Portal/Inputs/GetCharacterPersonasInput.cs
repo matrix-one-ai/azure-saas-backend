@@ -16,7 +16,7 @@ public class GetCharacterPersonasInput : PagedAndSortedInputDto, IShouldNormaliz
     {
         if (Sorting.IsNullOrWhiteSpace())
         {
-            Sorting = "Persona.Name";
+            Sorting = "TwitterRank.Rank";
         }
     }
 }

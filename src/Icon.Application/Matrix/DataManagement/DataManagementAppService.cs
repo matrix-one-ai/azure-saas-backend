@@ -42,6 +42,7 @@ namespace Icon.Matrix
         private IPlatformManager _platformManager;
         private ICharacterManager _characterManager;
         private ITwitterTaskManager _twitterManager;
+        private ITokenPoolManager _tokenPoolManager;
 
         private readonly ISharedSqlRepository<CharacterPersonaTwitterRank> _cpTwitterRankSqlRepository;
 
@@ -52,6 +53,7 @@ namespace Icon.Matrix
             IPlatformManager platformManager,
             ICharacterManager characterManager,
             ITwitterTaskManager twitterManager,
+            ITokenPoolManager tokenPoolManager,
 
             ISharedSqlRepository<CharacterPersonaTwitterRank> cpTwitterRankSqlRepository)
         {
@@ -61,9 +63,18 @@ namespace Icon.Matrix
             _platformManager = platformManager;
             _characterManager = characterManager;
             _twitterManager = twitterManager;
+            _tokenPoolManager = tokenPoolManager;
 
             _cpTwitterRankSqlRepository = cpTwitterRankSqlRepository;
         }
+
+        [HttpPost]
+        public async Task ProcessTokenPoolUpdates()
+        {
+            AbpSession.Use(2, 3);
+            await _tokenPoolManager.ImportRaydiumPoolUpdates();
+        }
+
 
         [HttpPost]
         // STEP 01
@@ -89,7 +100,7 @@ namespace Icon.Matrix
         public async Task ProcessCharacterPostTweet()
         {
             AbpSession.Use(2, 3);
-            await _twitterManager.ProcessCharacterPostTweet();
+            await _twitterManager.ProcessCharacterPostTweets();
         }
 
         private async Task ProcessCharacterPersonaRanking()

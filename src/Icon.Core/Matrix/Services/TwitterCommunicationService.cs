@@ -15,6 +15,7 @@ namespace Icon.Matrix.Twitter
     public interface ITwitterCommunicationService
     {
         Task<TwitterApiPostTweetResponse> PostTweetAsync(string twitterAgentId, string text);
+        Task<TwitterApiPostTweetResponse> PostTweetWithImageAsync(string twitterAgentId, string imageBase64, string text = null);
         Task<TwitterApiPostTweetResponse> ReplyToTweetAsync(string twitterAgentId, string tweetId, string text);
         Task<List<TwitterScraperTweetResponse>> GetTweetsAsync(string twitterAgentId, string username, int count);
         Task<List<TwitterScraperTweetResponse>> GetTweetsFromDateAsync(string twitterAgentId, string username, DateTime fromDate, int limit = 5);
@@ -78,6 +79,19 @@ namespace Icon.Matrix.Twitter
             return ExecuteRequestAsync<TwitterApiPostTweetResponse>(
                 () => _httpClient.PostAsJsonAsync("/postTweet", new { agentId = twitterAgentId, text }),
                 $"PostTweetAsync for agentId: {twitterAgentId}"
+            );
+        }
+
+        public Task<TwitterApiPostTweetResponse> PostTweetWithImageAsync(string twitterAgentId, string imageBase64, string text = null)
+        {
+            return ExecuteRequestAsync<TwitterApiPostTweetResponse>(
+                () => _httpClient.PostAsJsonAsync("/postTweetWithImage", new
+                {
+                    agentId = twitterAgentId,
+                    imageBase64,
+                    text
+                }),
+                $"PostTweetWithImageAsync for agentId: {twitterAgentId}"
             );
         }
 

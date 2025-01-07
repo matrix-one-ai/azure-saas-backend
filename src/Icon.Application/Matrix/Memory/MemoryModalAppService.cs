@@ -116,7 +116,7 @@ namespace Icon.Matrix.Memories
                 }
                 catch (Exception e)
                 {
-                    throw new UserFriendlyException("Prompt response is not valid or could not be deserialized");
+                    throw new UserFriendlyException($"Prompt response is not valid or could not be deserialized. Error: " + e.Message);
                 }
             }
 

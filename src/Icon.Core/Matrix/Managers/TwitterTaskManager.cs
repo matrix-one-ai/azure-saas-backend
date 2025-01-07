@@ -1,5 +1,7 @@
 using System;
+using System.Collections.Generic;
 using System.Linq;
+using System.Net.Http;
 using System.Text.Json;
 using System.Threading.Tasks;
 using Abp.Dependency;
@@ -18,7 +20,7 @@ namespace Icon.Matrix.Twitter
     {
         Task ProcessCharacterTweetImports();
         Task ProcessCharacterTweetsStorage();
-        Task ProcessCharacterPostTweet();
+        Task ProcessCharacterPostTweets();
         Task ProcessMissingTwitterProfiles();
     }
 
@@ -32,7 +34,6 @@ namespace Icon.Matrix.Twitter
         private readonly IRepository<TwitterImportLog, Guid> _twitterImportLogRepository;
         private readonly IMemoryManager _memoryManager;
         private readonly IAIManager _aiManager;
-
         private readonly IUnitOfWorkManager _unitOfWorkManager;
 
         public TwitterTaskManager(
@@ -366,9 +367,10 @@ namespace Icon.Matrix.Twitter
             }
         }
 
-        public async Task ProcessCharacterPostTweet()
+        public async Task ProcessCharacterPostTweets()
         {
             var characters = await _characterRepository.GetAllListAsync();
+            var postTypes = new List<string> { "PostCharacterTweetAsync", "PostCharacterPersonaWelcomeTweet" };
 
             foreach (var character in characters)
             {
@@ -376,7 +378,7 @@ namespace Icon.Matrix.Twitter
                     x.CharacterId == character.Id &&
                     x.IsEnabled &&
                     x.NextRunTime <= DateTime.UtcNow &&
-                    x.TaskName == "PostCharacterTweetAsync");
+                    postTypes.Contains(x.TaskName));
 
                 if (tasks == null || !tasks.Any())
                 {
@@ -385,7 +387,14 @@ namespace Icon.Matrix.Twitter
 
                 foreach (var task in tasks)
                 {
-                    await PostCharacterTweetAsync(task, character);
+                    if (task.TaskName == "PostCharacterTweetAsync")
+                    {
+                        await PostCharacterTweetAsync(task, character);
+                    }
+                    else if (task.TaskName == "PostCharacterPersonaWelcomeTweet")
+                    {
+                        await ProcessCharacterPersonaWelcomeTweet(task, character);
+                    }
                 }
 
                 var importTask = await _twitterImportTaskRepository
@@ -403,7 +412,7 @@ namespace Icon.Matrix.Twitter
             }
         }
 
-        public async Task PostCharacterTweetAsync(TwitterImportTask task, Character character)
+        private async Task PostCharacterTweetAsync(TwitterImportTask task, Character character)
         {
             var startTime = DateTime.UtcNow;
 
@@ -483,6 +492,166 @@ namespace Icon.Matrix.Twitter
                 await uow.CompleteAsync();
             }
         }
+
+        private async Task ProcessCharacterPersonaWelcomeTweet(TwitterImportTask task, Character character)
+        {
+            var startTime = DateTime.UtcNow;
+
+            using (var uow = _unitOfWorkManager.Begin())
+            {
+                try
+                {
+                    if (task == null || task.CharacterId == Guid.Empty || string.IsNullOrEmpty(character.TwitterPostAgentId))
+                    {
+                        task ??= new TwitterImportTask();
+                        task.LastRunCompletionTime = null;
+
+                        var invalidLog = new TwitterImportLog
+                        {
+                            TenantId = task.TenantId,
+                            CharacterId = task.CharacterId,
+                            TwitterAgentId = character.TwitterPostAgentId,
+                            TaskName = task.TaskName,
+                            Message = "ProcessCharacterPersonaWelcomeTweet: Invalid task or missing fields.",
+                            LogLevel = "Warning",
+                            LoggedAt = DateTime.UtcNow
+                        };
+                        await _twitterImportLogRepository.InsertAsync(invalidLog);
+
+                        await _unitOfWorkManager.Current.SaveChangesAsync();
+                        await uow.CompleteAsync();
+                        return;
+                    }
+
+                    var characterPersonas = await _characterPersonaRepository
+                        .GetAll()
+                        .Include(x => x.TwitterProfile)
+                        .Include(x => x.TwitterRank)
+                        .Include(x => x.Persona).ThenInclude(p => p.Platforms).ThenInclude(p => p.Platform)
+                        .Where(x =>
+                            x.CharacterId == character.Id &&
+                            x.WelcomeMessageSent == false &&
+                            x.Persona.Platforms.Any(p => p.Platform.Name == "Twitter"))
+                        .OrderBy(x => x.TwitterRank.Rank)
+                        .Take(10)
+                        .ToListAsync();
+
+                    var limitToSend = 1;
+                    var successCount = 0;
+
+                    foreach (var characterPersona in characterPersonas)
+                    {
+                        if (successCount >= limitToSend) break;
+
+                        var twitterPlatform = characterPersona.Persona.Platforms.FirstOrDefault(p => p.Platform.Name == "Twitter");
+                        if (twitterPlatform == null) continue;
+
+                        var userHandle = twitterPlatform.PlatformPersonaId;
+                        var userSearch = userHandle.StartsWith("@") ? userHandle.Substring(1) : userHandle;
+                        var avatarUrl = characterPersona.TwitterProfile?.Avatar ?? "https://abs.twimg.com/sticky/default_profile_images/default_profile_normal.png";
+                        var userNameForQuery = Uri.EscapeDataString(userSearch);
+                        var avatarUrlForQuery = Uri.EscapeDataString(avatarUrl);
+                        var imageUrl = $"https://plant.fun/api/leaderboard/image?userName={userNameForQuery}&twitterAvatarUrl={avatarUrlForQuery}";
+
+                        try
+                        {
+                            using (var httpClient = new HttpClient())
+                            {
+                                var imageBytes = await httpClient.GetByteArrayAsync(imageUrl);
+                                var imageBase64 = Convert.ToBase64String(imageBytes);
+                                var welcomeText = $"Welcome {userHandle} my new Gardener. Reply under this post with your wallet address for Rain(air)drops! Keep feeding me mentions on X and watch me grow. \uD83C\uDF35\uD83C\uDF89";
+
+                                await _twitterCommunicationService.PostTweetWithImageAsync(
+                                    character.TwitterPostAgentId,
+                                    imageBase64,
+                                    welcomeText
+                                );
+
+                                characterPersona.WelcomeMessageSent = true;
+                                characterPersona.WelcomeMessageSentAt = DateTime.UtcNow;
+                                await _characterPersonaRepository.UpdateAsync(characterPersona);
+
+                                var successLog = new TwitterImportLog
+                                {
+                                    TenantId = characterPersona.TenantId,
+                                    CharacterId = characterPersona.CharacterId,
+                                    TwitterAgentId = character.TwitterPostAgentId,
+                                    TaskName = task.TaskName,
+                                    Message = $"Successfully posted welcome tweet to {userHandle}.",
+                                    LogLevel = "Information",
+                                    LoggedAt = DateTime.UtcNow
+                                };
+                                await _twitterImportLogRepository.InsertAsync(successLog);
+
+                                successCount++;
+                            }
+                        }
+                        catch (Exception ex)
+                        {
+                            var errorLog = new TwitterImportLog
+                            {
+                                TenantId = characterPersona.TenantId,
+                                CharacterId = characterPersona.CharacterId,
+                                TwitterAgentId = character.TwitterPostAgentId,
+                                TaskName = task.TaskName,
+                                Message = $"Failed posting welcome tweet to {userHandle}.",
+                                LogLevel = "Error",
+                                Exception = ex.ToString(),
+                                ExceptionMessage = ex.Message,
+                                LoggedAt = DateTime.UtcNow
+                            };
+                            await _twitterImportLogRepository.InsertAsync(errorLog);
+                        }
+
+                        await _unitOfWorkManager.Current.SaveChangesAsync();
+                    }
+                }
+                catch (Exception ex)
+                {
+                    var errorLog = new TwitterImportLog
+                    {
+                        TenantId = task?.TenantId ?? 0,
+                        CharacterId = task?.CharacterId ?? Guid.Empty,
+                        TwitterAgentId = character.TwitterPostAgentId,
+                        TaskName = task?.TaskName,
+                        Message = "ProcessCharacterPersonaWelcomeTweet failed.",
+                        LogLevel = "Error",
+                        Exception = ex.ToString(),
+                        ExceptionMessage = ex.Message,
+                        LoggedAt = DateTime.UtcNow
+                    };
+                    await _twitterImportLogRepository.InsertAsync(errorLog);
+
+                    await _unitOfWorkManager.Current.SaveChangesAsync();
+                    throw;
+                }
+
+                var endTime = DateTime.UtcNow;
+                task.LastRunCompletionTime = endTime;
+                task.LastRunStartTime = startTime;
+                task.LastRunDurationSeconds = (int)(endTime - startTime).TotalSeconds;
+                if (task.RunEveryXMinutes > 0) task.NextRunTime = endTime.AddMinutes(task.RunEveryXMinutes);
+
+                await _twitterImportTaskRepository.UpdateAsync(task);
+
+                var successLog2 = new TwitterImportLog
+                {
+                    TenantId = task.TenantId,
+                    CharacterId = task.CharacterId,
+                    TwitterAgentId = character.TwitterPostAgentId,
+                    TaskName = task.TaskName,
+                    Message = "Successfully posted persona welcome tweets.",
+                    LogLevel = "Information",
+                    LoggedAt = DateTime.UtcNow
+                };
+                await _twitterImportLogRepository.InsertAsync(successLog2);
+
+                await _unitOfWorkManager.Current.SaveChangesAsync();
+                await uow.CompleteAsync();
+            }
+        }
+
+
 
         public async Task ProcessCharacterTweetImports()
         {

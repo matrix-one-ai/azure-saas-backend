@@ -86,6 +86,10 @@ namespace Icon.EntityFrameworkCore
         public virtual DbSet<UserDelegation> UserDelegations { get; set; }
 
         public virtual DbSet<RecentPassword> RecentPasswords { get; set; }
+        public virtual DbSet<RaydiumPair> RaydiumPairs { get; set; }
+
+        public virtual DbSet<CoingeckoPoolUpdate> CoingeckoPoolUpdates { get; set; }
+
 
         public IconDbContext(DbContextOptions<IconDbContext> options)
             : base(options)

@@ -47,6 +47,7 @@ using Icon.Web.OpenIddict;
 using Abp.AspNetCore.OpenIddict;
 using Icon.EntityFrameworkCore.Matrix;
 using Icon.Matrix.Twitter;
+using Icon.Matrix.Raydium;
 
 namespace Icon.Web.Startup
 {
@@ -150,6 +151,11 @@ namespace Icon.Web.Startup
 
             services.AddScoped(typeof(ISharedSqlRepository<>), typeof(SharedSqlRepository<>));
             services.AddTransient(typeof(ITwitterCommunicationService), typeof(TwitterCommunicationService));
+
+            if (_hostingEnvironment.IsProduction())
+            {
+                services.AddHostedService<RaydiumNewPairHostedService>();
+            }
 
             if (WebConsts.GraphQL.Enabled)
             {
