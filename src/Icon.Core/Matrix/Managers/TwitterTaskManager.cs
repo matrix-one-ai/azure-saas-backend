@@ -46,7 +46,6 @@ namespace Icon.Matrix.Twitter
             IMemoryManager memoryManager,
             IAIManager aiManager,
             IUnitOfWorkManager unitOfWorkManager)
-
         {
             _twitterCommunicationService = twitterCommunicationService;
             _importTweetRepository = importTweetRepository;
@@ -62,10 +61,8 @@ namespace Icon.Matrix.Twitter
         public async Task ProcessCharacterTweetsStorage()
         {
             await ProcessNewCharacterTweets();
-
             await ProcessUpdatedCharacterMentionedTweets();
             await ProcessNewCharacterMentionedTweets();
-
             await ProcessNewCharacterPersonaTweets();
         }
 
@@ -101,7 +98,6 @@ namespace Icon.Matrix.Twitter
             foreach (var tweet in characterMentionedTweetsNew)
             {
                 var memoryStatsTwitter = CreateMemoryStatsTwitter(tweet);
-
                 var username = FormatUsername(tweet.Username);
 
                 await _memoryManager.StoreCharacterMentionedTweets(
@@ -130,7 +126,6 @@ namespace Icon.Matrix.Twitter
             foreach (var tweet in characterMentionedTweetsUpdated)
             {
                 var memoryStatsTwitter = CreateMemoryStatsTwitter(tweet);
-
                 var username = FormatUsername(tweet.Username);
 
                 await _memoryManager.StoreCharacterMentionedTweets(
@@ -221,7 +216,6 @@ namespace Icon.Matrix.Twitter
                     }
 
                     var twitterPlatform = cpersona.Persona.Platforms.FirstOrDefault(p => p.Platform.Name == "Twitter");
-
                     if (twitterPlatform == null)
                     {
                         continue;
@@ -311,59 +305,6 @@ namespace Icon.Matrix.Twitter
                         await uow.CompleteAsync();
                     }
                 }
-            }
-        }
-
-        private MemoryStatsTwitter CreateMemoryStatsTwitter(TwitterImportTweet tweet)
-        {
-            return new MemoryStatsTwitter
-            {
-                TenantId = tweet.TenantId,
-                IsPin = tweet.IsPin,
-                IsQuoted = tweet.IsQuoted,
-                IsReply = tweet.IsReply,
-                IsRetweet = tweet.IsRetweet,
-                SensitiveContent = tweet.SensitiveContent,
-                BookmarkCount = tweet.BookmarkCount,
-                Likes = tweet.Likes,
-                Replies = tweet.Replies,
-                Retweets = tweet.Retweets,
-                Views = tweet.Views,
-                TweetWordCount = tweet.Text.Split(' ').Length,
-                MentionsCount = tweet.MentionsJson.ToString().Split('}').Length - 1
-            };
-        }
-
-        private string FormatUsername(string username)
-        {
-            return username.StartsWith("@") ? username : "@" + username;
-        }
-
-
-
-        private async Task UpdateImportTweetExportedStatus(TwitterImportTweet tweet)
-        {
-            using (var uow = _unitOfWorkManager.Begin())
-            {
-                tweet.Exported = true;
-                tweet.ExportDate = DateTime.UtcNow;
-
-                await _importTweetRepository.UpdateAsync(tweet);
-                await _unitOfWorkManager.Current.SaveChangesAsync();
-                await uow.CompleteAsync();
-            }
-        }
-
-        private async Task UpdateImportTweetLastExportedStatus(TwitterImportTweet tweet)
-        {
-            using (var uow = _unitOfWorkManager.Begin())
-            {
-                tweet.ExportDate = DateTime.UtcNow;
-                tweet.LastTwitterImportExported = true;
-
-                await _importTweetRepository.UpdateAsync(tweet);
-                await _unitOfWorkManager.Current.SaveChangesAsync();
-                await uow.CompleteAsync();
             }
         }
 
@@ -462,7 +403,7 @@ namespace Icon.Matrix.Twitter
 
                     await _unitOfWorkManager.Current.SaveChangesAsync();
                     throw;
-                };
+                }
 
                 var endTime = DateTime.UtcNow;
                 task.LastRunCompletionTime = endTime;
@@ -548,7 +489,8 @@ namespace Icon.Matrix.Twitter
 
                         var userHandle = twitterPlatform.PlatformPersonaId;
                         var userSearch = userHandle.StartsWith("@") ? userHandle.Substring(1) : userHandle;
-                        var avatarUrl = characterPersona.TwitterProfile?.Avatar ?? "https://abs.twimg.com/sticky/default_profile_images/default_profile_normal.png";
+                        var avatarUrl = characterPersona.TwitterProfile?.Avatar
+                            ?? "https://abs.twimg.com/sticky/default_profile_images/default_profile_normal.png";
                         var userNameForQuery = Uri.EscapeDataString(userSearch);
                         var avatarUrlForQuery = Uri.EscapeDataString(avatarUrl);
                         var imageUrl = $"https://plant.fun/api/leaderboard/image?userName={userNameForQuery}&twitterAvatarUrl={avatarUrlForQuery}";
@@ -559,7 +501,7 @@ namespace Icon.Matrix.Twitter
                             {
                                 var imageBytes = await httpClient.GetByteArrayAsync(imageUrl);
                                 var imageBase64 = Convert.ToBase64String(imageBytes);
-                                var welcomeText = $"Welcome {userHandle} my new Gardener. Reply under this post with your wallet address for Rain(air)drops! Keep feeding me mentions on X and watch me grow. \uD83C\uDF35\uD83C\uDF89";
+                                var welcomeText = $"Welcome {userHandle} my new Gardener. Reply under this post with your Solana wallet for Rain(air)drops! Keep feeding me mentions on X and watch me grow. \uD83C\uDF35\uD83C\uDF89";
 
                                 await _twitterCommunicationService.PostTweetWithImageAsync(
                                     character.TwitterPostAgentId,
@@ -651,11 +593,8 @@ namespace Icon.Matrix.Twitter
             }
         }
 
-
-
         public async Task ProcessCharacterTweetImports()
         {
-            // Get all characters with Twitter import tasks
             var characters = await _characterRepository.GetAllListAsync();
 
             foreach (var character in characters)
@@ -688,8 +627,6 @@ namespace Icon.Matrix.Twitter
             {
                 try
                 {
-
-                    // 1) Retrieve character             
                     if (character == null)
                     {
                         task.LastRunCompletionTime = null;
@@ -709,13 +646,11 @@ namespace Icon.Matrix.Twitter
                         return task;
                     }
 
-                    // 2) Basic validations
                     if (task == null || task.CharacterId == Guid.Empty || string.IsNullOrEmpty(character?.TwitterScrapeAgentId))
                     {
                         task ??= new TwitterImportTask();
                         task.LastRunCompletionTime = null;
 
-                        // Insert a log message if needed
                         var invalidLog = new TwitterImportLog
                         {
                             TenantId = task.TenantId,
@@ -726,6 +661,7 @@ namespace Icon.Matrix.Twitter
                             LogLevel = "Warning",
                             LoggedAt = DateTime.UtcNow
                         };
+
                         await _twitterImportLogRepository.InsertAsync(invalidLog);
 
                         await _unitOfWorkManager.Current.SaveChangesAsync();
@@ -733,15 +669,11 @@ namespace Icon.Matrix.Twitter
                         return task;
                     }
 
-                    // 3) Determine import limit
                     int importLimit = task.ImportLimitTotal > 0 ? task.ImportLimitTotal : 10;
-
-                    // 4) Prepare username for search
                     var userSearch = character.TwitterUserName.StartsWith("@")
                         ? character.TwitterUserName.Substring(1)
                         : character.TwitterUserName;
 
-                    // 5) Fetch tweets
                     var tweets = await _twitterCommunicationService.GetTweetsAsync(
                         character.TwitterScrapeAgentId,
                         userSearch,
@@ -759,13 +691,10 @@ namespace Icon.Matrix.Twitter
                         );
                     }
 
-                    // 7) Update task
                     var endTime = DateTime.UtcNow;
                     task.LastRunCompletionTime = endTime;
                     task.LastRunStartTime = startTime;
                     task.LastRunDurationSeconds = (int)(endTime - startTime).TotalSeconds;
-
-                    // If you want to schedule the next run
                     if (task.RunEveryXMinutes > 0)
                     {
                         task.NextRunTime = endTime.AddMinutes(task.RunEveryXMinutes);
@@ -773,7 +702,6 @@ namespace Icon.Matrix.Twitter
 
                     await _twitterImportTaskRepository.UpdateAsync(task);
 
-                    // 8) Insert a "success" log
                     var successLog = new TwitterImportLog
                     {
                         TenantId = task.TenantId,
@@ -786,7 +714,6 @@ namespace Icon.Matrix.Twitter
                     };
                     await _twitterImportLogRepository.InsertAsync(successLog);
 
-                    // 9) Save & commit the UOW
                     await _unitOfWorkManager.Current.SaveChangesAsync();
                     await uow.CompleteAsync();
 
@@ -794,10 +721,9 @@ namespace Icon.Matrix.Twitter
                 }
                 catch (Exception ex)
                 {
-                    // 10) Insert an "error" log
                     var errorLog = new TwitterImportLog
                     {
-                        TenantId = task?.TenantId ?? 0,  // or handle null
+                        TenantId = task?.TenantId ?? 0,
                         CharacterId = task?.CharacterId ?? Guid.Empty,
                         TwitterAgentId = character?.TwitterScrapeAgentId,
                         TaskName = task?.TaskName,
@@ -810,7 +736,6 @@ namespace Icon.Matrix.Twitter
                     await _twitterImportLogRepository.InsertAsync(errorLog);
 
                     await _unitOfWorkManager.Current.SaveChangesAsync();
-                    // Re-throw the exception (or handle it as you prefer)
                     throw;
                 }
             }
@@ -824,7 +749,6 @@ namespace Icon.Matrix.Twitter
             {
                 try
                 {
-                    // 1) Retrieve character                    
                     if (character == null)
                     {
                         task.LastRunCompletionTime = null;
@@ -846,7 +770,6 @@ namespace Icon.Matrix.Twitter
                         return task;
                     }
 
-                    // 2) Basic validations
                     if (task == null || task.CharacterId == Guid.Empty || string.IsNullOrEmpty(character?.TwitterScrapeAgentId))
                     {
                         task ??= new TwitterImportTask();
@@ -869,19 +792,16 @@ namespace Icon.Matrix.Twitter
                         return task;
                     }
 
-                    // 3) Possibly remove '@'
                     var userSearch = character.TwitterUserName.StartsWith("@")
                         ? character.TwitterUserName.Substring(1)
                         : character.TwitterUserName;
 
-                    // 4) Fetch mentions via the comm. service
                     var mentions = await _twitterCommunicationService.GetUserMentionsAsync(
                         character.TwitterScrapeAgentId,
                         userSearch,
                         task.ImportLimitTotal
                     );
 
-                    // 5) Upsert each mention with a different TweetType
                     foreach (var tweet in mentions)
                     {
                         await MapAndUpsertTweetAsync(
@@ -889,11 +809,10 @@ namespace Icon.Matrix.Twitter
                             task,
                             character.Id,
                             character.Name,
-                            "CharacterMentionedTweet" // or "CharacterMentionedTweet"
+                            "CharacterMentionedTweet"
                         );
                     }
 
-                    // 6) Update the import task
                     var endTime = DateTime.UtcNow;
                     task.LastRunCompletionTime = endTime;
                     task.LastRunStartTime = startTime;
@@ -905,7 +824,6 @@ namespace Icon.Matrix.Twitter
 
                     await _twitterImportTaskRepository.UpdateAsync(task);
 
-                    // 7) Log success
                     var successLog = new TwitterImportLog
                     {
                         TenantId = task.TenantId,
@@ -925,7 +843,6 @@ namespace Icon.Matrix.Twitter
                 }
                 catch (Exception ex)
                 {
-                    // 8) Error log
                     var errorLog = new TwitterImportLog
                     {
                         TenantId = task?.TenantId ?? 0,
@@ -954,7 +871,6 @@ namespace Icon.Matrix.Twitter
             {
                 try
                 {
-                    // 1) Retrieve character                    
                     if (character == null)
                     {
                         task.LastRunCompletionTime = null;
@@ -976,14 +892,11 @@ namespace Icon.Matrix.Twitter
                         return task;
                     }
 
-
-                    // 2) Basic validations
                     if (task == null || task.CharacterId == Guid.Empty || string.IsNullOrEmpty(character.TwitterScrapeAgentId))
                     {
                         task ??= new TwitterImportTask();
                         task.LastRunCompletionTime = null;
 
-                        // Insert a log message
                         var invalidLog = new TwitterImportLog
                         {
                             TenantId = task.TenantId,
@@ -1001,8 +914,6 @@ namespace Icon.Matrix.Twitter
                         return task;
                     }
 
-
-
                     var characterPersonas = await _characterPersonaRepository
                         .GetAll()
                         .Include(cp => cp.Persona)
@@ -1013,54 +924,42 @@ namespace Icon.Matrix.Twitter
 
                     if (characterPersonas == null || !characterPersonas.Any())
                     {
-                        // no persona found
                         task.LastRunCompletionTime = DateTime.UtcNow;
                         await _unitOfWorkManager.Current.SaveChangesAsync();
                         await uow.CompleteAsync();
                         return task;
                     }
 
-                    // personas = list wheere platform is twitter
                     characterPersonas = characterPersonas.Where(cp => cp.Persona.Platforms.Any(p => p.Platform.Name == "Twitter")).ToList();
                     var personas = characterPersonas.Select(cp => cp.Persona).ToList();
-
                     if (personas == null || !personas.Any())
                     {
-                        // no persona found
                         task.LastRunCompletionTime = DateTime.UtcNow;
                         await _unitOfWorkManager.Current.SaveChangesAsync();
                         await uow.CompleteAsync();
                         return task;
                     }
 
-                    // 4) For each persona, fetch the tweets and map them
                     foreach (var persona in personas)
                     {
                         var twitterPlatform = persona.Platforms.FirstOrDefault(p => p.Platform.Name == "Twitter");
-
                         if (twitterPlatform == null)
                         {
-                            // no twitter platform found
                             continue;
                         }
 
-                        // Possibly strip the '@'
                         var userSearch = twitterPlatform.PlatformPersonaId.StartsWith("@")
                             ? twitterPlatform.PlatformPersonaId.Substring(1)
                             : twitterPlatform.PlatformPersonaId;
 
-                        // Example: use the same "GetTweetsAsync"
-                        // Or if you have multiple "agents," pass in the persona's agent
                         var tweets = await _twitterCommunicationService.GetTweetsAsync(
                             character.TwitterScrapeAgentId,
                             userSearch,
                             task.ImportLimitTotal > 0 ? task.ImportLimitTotal : 10
                         );
 
-                        // 5) Upsert each tweet into the same table, but different TweetType
                         foreach (var tweet in tweets)
                         {
-                            // Re-use the shared helper
                             await MapAndUpsertTweetAsync(
                                 tweet,
                                 task,
@@ -1071,7 +970,6 @@ namespace Icon.Matrix.Twitter
                         }
                     }
 
-                    // 6) Update the import task
                     var endTime = DateTime.UtcNow;
                     task.LastRunCompletionTime = endTime;
                     task.LastRunStartTime = startTime;
@@ -1083,7 +981,6 @@ namespace Icon.Matrix.Twitter
 
                     await _twitterImportTaskRepository.UpdateAsync(task);
 
-                    // 7) Success log
                     var successLog = new TwitterImportLog
                     {
                         TenantId = task.TenantId,
@@ -1103,7 +1000,6 @@ namespace Icon.Matrix.Twitter
                 }
                 catch (Exception ex)
                 {
-                    // 8) Error log
                     var errorLog = new TwitterImportLog
                     {
                         TenantId = task?.TenantId ?? 0,
@@ -1124,36 +1020,30 @@ namespace Icon.Matrix.Twitter
             }
         }
 
-        private async Task<TwitterImportTweet> MapAndUpsertTweetAsync(TwitterScraperTweetResponse tweet, TwitterImportTask importTask, Guid characterId, string characterName, string tweetType)
+        private async Task<TwitterImportTweet> MapAndUpsertTweetAsync(
+            TwitterScraperTweetResponse tweet,
+            TwitterImportTask importTask,
+            Guid characterId,
+            string characterName,
+            string tweetType)
         {
             var tweetId = tweet.Id ?? string.Empty;
 
-            // Check if it already exists
             var existingEntity = await _importTweetRepository.FirstOrDefaultAsync(x =>
                 x.TweetId == tweetId && x.CharacterId == characterId);
 
-            // Create new if needed
             if (existingEntity == null)
             {
                 existingEntity = new TwitterImportTweet
                 {
-                    TenantId = importTask.TenantId,           // from your task
-                    TweetType = tweetType,                    // "CharacterPersona" or "CharacterMention", etc.
+                    TenantId = importTask.TenantId,
+                    TweetType = tweetType,
                     CharacterId = characterId,
                     CharacterName = characterName,
-                    TweetId = tweetId,
-                    LastTwitterImportDate = DateTime.UtcNow,
-                    LastTwitterImportExported = false
+                    TweetId = tweetId
                 };
             }
-            // else
-            // {
-            //     // If it's not transient, we simply update fields below
-            //     // preserving the PK / existing fields.
-            //     existingEntity.TweetType = tweetType; // possibly override the type
-            // }
 
-            // ----- Arrays -> CSV strings
             existingEntity.Hashtags = tweet.Hashtags != null
                 ? string.Join(",", tweet.Hashtags)
                 : string.Empty;
@@ -1161,7 +1051,6 @@ namespace Icon.Matrix.Twitter
                 ? string.Join(",", tweet.Urls)
                 : string.Empty;
 
-            // ----- Objects -> JSON
             existingEntity.MentionsJson = tweet.Mentions != null
                 ? JsonSerializer.Serialize(tweet.Mentions)
                 : string.Empty;
@@ -1190,7 +1079,6 @@ namespace Icon.Matrix.Twitter
                 ? JsonSerializer.Serialize(tweet.Thread)
                 : string.Empty;
 
-            // ----- Other scalars
             existingEntity.BookmarkCount = tweet.BookmarkCount ?? 0;
             existingEntity.ConversationId = tweet.ConversationId ?? string.Empty;
             existingEntity.Html = tweet.Html ?? string.Empty;
@@ -1215,153 +1103,70 @@ namespace Icon.Matrix.Twitter
             existingEntity.Views = tweet.Views ?? 0;
             existingEntity.SensitiveContent = tweet.SensitiveContent ?? false;
             existingEntity.LastTwitterImportDate = DateTime.UtcNow;
+            existingEntity.LastTwitterImportExported = false;
 
-            // ----- Insert or Update
             if (existingEntity.IsTransient())
             {
                 await _importTweetRepository.InsertAsync(existingEntity);
             }
             else
             {
+
                 await _importTweetRepository.UpdateAsync(existingEntity);
             }
 
             return existingEntity;
         }
 
+        private MemoryStatsTwitter CreateMemoryStatsTwitter(TwitterImportTweet tweet)
+        {
+            return new MemoryStatsTwitter
+            {
+                TenantId = tweet.TenantId,
+                IsPin = tweet.IsPin,
+                IsQuoted = tweet.IsQuoted,
+                IsReply = tweet.IsReply,
+                IsRetweet = tweet.IsRetweet,
+                SensitiveContent = tweet.SensitiveContent,
+                BookmarkCount = tweet.BookmarkCount,
+                Likes = tweet.Likes,
+                Replies = tweet.Replies,
+                Retweets = tweet.Retweets,
+                Views = tweet.Views,
+                TweetWordCount = tweet.Text.Split(' ').Length,
+                MentionsCount = tweet.MentionsJson.ToString().Split('}').Length - 1
+            };
+        }
 
-        // public async Task ProccessCharacterTweetsStorage()
-        // {
-        //     var characterTweets = await _importTweetRepository
-        //         .GetAll()
-        //         .Where(x => x.Exported == false && x.TweetType == "CharacterTweet")
-        //         .ToListAsync();
+        private string FormatUsername(string username)
+        {
+            return username.StartsWith("@") ? username : "@" + username;
+        }
 
-        //     foreach (var tweet in characterTweets)
-        //     {
-        //         await _memoryManager.StoreCharacterTweets(
-        //             characterId: tweet.CharacterId,
-        //             conversationId: tweet.ConversationId,
-        //             tweetId: tweet.TweetId,
-        //             tweetContent: tweet.Text,
-        //             tweetUrl: tweet.PermanentUrl,
-        //             platformInteractionDate: tweet.TimeParsed
-        //         );
+        private async Task UpdateImportTweetExportedStatus(TwitterImportTweet tweet)
+        {
+            using (var uow = _unitOfWorkManager.Begin())
+            {
+                tweet.Exported = true;
+                tweet.ExportDate = DateTime.UtcNow;
 
-        //         await UpdateImportTweetExportedStatus(tweet);
-        //     }
+                await _importTweetRepository.UpdateAsync(tweet);
+                await _unitOfWorkManager.Current.SaveChangesAsync();
+                await uow.CompleteAsync();
+            }
+        }
 
-        //     var characterMentionedTweetsNew = await _importTweetRepository
-        //         .GetAll()
-        //         .Where(x => x.Exported == false && x.TweetType == "CharacterMentionedTweet")
-        //         .ToListAsync();
+        private async Task UpdateImportTweetLastExportedStatus(TwitterImportTweet tweet)
+        {
+            using (var uow = _unitOfWorkManager.Begin())
+            {
+                tweet.ExportDate = DateTime.UtcNow;
+                tweet.LastTwitterImportExported = true;
 
-        //     foreach (var tweet in characterMentionedTweetsNew)
-        //     {
-        //         var memoryStatsTwitter = new MemoryStatsTwitter
-        //         {
-        //             TenantId = tweet.TenantId,
-        //             IsPin = tweet.IsPin,
-        //             IsQuoted = tweet.IsQuoted,
-        //             IsReply = tweet.IsReply,
-        //             IsRetweet = tweet.IsRetweet,
-        //             SensitiveContent = tweet.SensitiveContent,
-        //             BookmarkCount = tweet.BookmarkCount,
-        //             Likes = tweet.Likes,
-        //             Replies = tweet.Replies,
-        //             Retweets = tweet.Retweets,
-        //             Views = tweet.Views,
-        //             TweetWordCount = tweet.Text.Split(' ').Length,
-        //             MentionsCount = tweet.MentionsJson.ToString().Split('}').Length - 1
-        //         };
-
-        //         var username = tweet.Username;
-        //         if (!username.StartsWith("@"))
-        //             username = "@" + username;
-
-        //         await _memoryManager.StoreCharacterMentionedTweets(
-        //             characterId: tweet.CharacterId,
-        //             mentionByPersonaPlatformId: username,
-        //             mentionedByPersonaName: tweet.Name,
-        //             conversationId: tweet.ConversationId,
-        //             tweetId: tweet.TweetId,
-        //             tweetContent: tweet.Text,
-        //             tweetUrl: tweet.PermanentUrl,
-        //             platformInteractionDate: tweet.TimeParsed,
-        //             memoryStatsTwitter: memoryStatsTwitter
-        //         );
-
-        //         await UpdateImportTweetExportedStatus(tweet);
-        //     }
-
-        //     var characterMentiondTweetsUpdated = await _importTweetRepository
-        //         .GetAll()
-        //         .Where(x => x.Exported == true && x.LastTwitterImportExported == false && x.TweetType == "CharacterMentionedTweet")
-        //         .ToListAsync();
-
-        //     foreach (var tweet in characterMentiondTweetsUpdated)
-        //     {
-        //         var memoryStatsTwitter = new MemoryStatsTwitter
-        //         {
-        //             TenantId = tweet.TenantId,
-        //             IsPin = tweet.IsPin,
-        //             IsQuoted = tweet.IsQuoted,
-        //             IsReply = tweet.IsReply,
-        //             IsRetweet = tweet.IsRetweet,
-        //             SensitiveContent = tweet.SensitiveContent,
-        //             BookmarkCount = tweet.BookmarkCount,
-        //             Likes = tweet.Likes,
-        //             Replies = tweet.Replies,
-        //             Retweets = tweet.Retweets,
-        //             Views = tweet.Views,
-        //             TweetWordCount = tweet.Text.Split(' ').Length,
-        //             MentionsCount = tweet.MentionsJson.ToString().Split('}').Length - 1
-        //         };
-
-        //         var username = tweet.Username;
-        //         if (!username.StartsWith("@"))
-        //             username = "@" + username;
-
-        //         await _memoryManager.StoreCharacterMentionedTweets(
-        //             characterId: tweet.CharacterId,
-        //             mentionByPersonaPlatformId: username,
-        //             mentionedByPersonaName: tweet.Name,
-        //             conversationId: tweet.ConversationId,
-        //             tweetId: tweet.TweetId,
-        //             tweetContent: tweet.Text,
-        //             tweetUrl: tweet.PermanentUrl,
-        //             platformInteractionDate: tweet.TimeParsed,
-        //             memoryStatsTwitter: memoryStatsTwitter
-        //         );
-
-        //         await UpdateImportTweetLastExportedStatus(tweet);
-        //     }
-
-        //     var characterPersonaTweets = await _importTweetRepository
-        //         .GetAll()
-        //         .Where(x => x.LastTwitterImportExported == false && x.TweetType == "CharacterPersonaTweet")
-        //         .ToListAsync();
-
-        //     foreach (var tweet in characterPersonaTweets)
-        //     {
-        //         var username = tweet.Username;
-        //         if (!username.StartsWith("@"))
-        //             username = "@" + username;
-
-        //         await _memoryManager.StoreCharacterPersonaTweets(
-        //             characterId: tweet.CharacterId,
-        //             personaPlatformId: username,
-        //             personaName: tweet.Name,
-        //             conversationId: tweet.ConversationId,
-        //             tweetId: tweet.TweetId,
-        //             tweetContent: tweet.Text,
-        //             tweetUrl: tweet.PermanentUrl,
-        //             platformInteractionDate: tweet.TimeParsed
-        //         );
-
-        //         await UpdateImportTweetExportedStatus(tweet);
-        //     }
-        // }
-
+                await _importTweetRepository.UpdateAsync(tweet);
+                await _unitOfWorkManager.Current.SaveChangesAsync();
+                await uow.CompleteAsync();
+            }
+        }
     }
 }

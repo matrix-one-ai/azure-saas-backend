@@ -4,6 +4,7 @@ using Icon.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
 using Microsoft.EntityFrameworkCore.Metadata;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 
 #nullable disable
@@ -11,9 +12,11 @@ using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 namespace Icon.Migrations
 {
     [DbContext(typeof(IconDbContext))]
-    partial class IconDbContextModelSnapshot : ModelSnapshot
+    [Migration("20250108161346_AddedConvoPersonaLimitsV4")]
+    partial class AddedConvoPersonaLimitsV4
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        /// <inheritdoc />
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
@@ -2706,10 +2709,10 @@ namespace Icon.Migrations
                         .HasColumnType("datetimeoffset");
 
                     b.Property<string>("PlatformInteractionId")
-                        .HasColumnType("nvarchar(450)");
+                        .HasColumnType("nvarchar(max)");
 
                     b.Property<string>("PlatformInteractionParentId")
-                        .HasColumnType("nvarchar(450)");
+                        .HasColumnType("nvarchar(max)");
 
                     b.Property<int>("RememberDays")
                         .HasColumnType("int");
@@ -2745,12 +2748,6 @@ namespace Icon.Migrations
 
                     b.HasIndex("PlatformInteractionDate")
                         .HasDatabaseName("IX_Memory_PlatformInteractionDate");
-
-                    b.HasIndex("PlatformInteractionId")
-                        .HasDatabaseName("IX_Memory_PlatformInteractionId");
-
-                    b.HasIndex("PlatformInteractionParentId")
-                        .HasDatabaseName("IX_Memory_PlatformInteractionParentId");
 
                     b.ToTable("Memories");
                 });

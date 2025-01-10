@@ -16,6 +16,8 @@ using Icon.Matrix.Portal.Dto;
 using Abp.Collections.Extensions;
 using Icon.EntityFrameworkCore.Matrix;
 using Icon.Matrix.Models;
+using Abp.UI;
+using Abp.Runtime.Caching;
 
 namespace Icon.Matrix.CharacterPersonas
 {
@@ -26,45 +28,119 @@ namespace Icon.Matrix.CharacterPersonas
         private readonly IRepository<CharacterPersona, Guid> _characterpersonaRepository;
         private readonly IRepository<CharacterPersonaTwitterRank, Guid> _cpTwitterRankRepository;
         private readonly ISharedSqlRepository<CharacterPersonaTwitterRank> _cpTwitterRankSqlRepository;
+        private readonly IRepository<Character, Guid> _characterRepository;
+        private readonly ICacheManager _cacheManager;
 
         public CharacterPersonaRankAppService(
             IRepository<CharacterPersona, Guid> characterpersonaRepository,
             IRepository<CharacterPersonaTwitterRank, Guid> cpTwitterRankRepository,
-            ISharedSqlRepository<CharacterPersonaTwitterRank> cpTwitterRankSqlRepository)
+            ISharedSqlRepository<CharacterPersonaTwitterRank> cpTwitterRankSqlRepository,
+            IRepository<Character, Guid> characterRepository,
+            ICacheManager cacheManager)
         {
             _characterpersonaRepository = characterpersonaRepository;
             _cpTwitterRankRepository = cpTwitterRankRepository;
             _cpTwitterRankSqlRepository = cpTwitterRankSqlRepository;
+            _characterRepository = characterRepository;
+            _cacheManager = cacheManager;
         }
 
         [HttpPost]
         public async Task<PagedResultDto<CharacterPersonaRankListDto>> GetCharacterPersonaRanking(GetCharacterPersonasInput input)
         {
-            var query = GetCharacterPersonasQuery(withProperties: false);
-            var filteredQuery = ApplyFiltering(query, input);
+            if (input.CharacterName == null)
+            {
+                throw new UserFriendlyException("Character name is required");
+            }
 
-            var queryCount = await GetCharacterPersonaCount(filteredQuery);
-            query = GetCharacterPersonasQuery(withProperties: true);
-            filteredQuery = ApplyFiltering(query, input);
+            Guid characterId = Guid.Empty;
+            if (input.CharacterName.Equals("plant", StringComparison.OrdinalIgnoreCase))
+            {
+                characterId = new Guid("77F38589-0DA9-4435-651C-08DD13B3124C"); // plant
+            }
+            else
+            {
+                characterId = await _characterRepository
+                    .GetAll()
+                    .Where(x => x.Name == input.CharacterName)
+                    .Select(x => x.Id)
+                    .FirstOrDefaultAsync();
 
-            var characterPersonas = await filteredQuery
-                .OrderBy(input.Sorting)
-                .PageBy(input)
-                .ToListAsync();
+                if (characterId == Guid.Empty)
+                {
+                    throw new UserFriendlyException("Character not found");
+                }
+            }
 
-            var mappedResult = MapCharacterPersonas(characterPersonas);
-            mappedResult = ApplyRowSettings(mappedResult);
+            var cacheKey = $"CharacterPersona_{characterId}";
+            var myCache = _cacheManager.GetCache<string, List<CharacterPersonaRankListDto>>("CharacterPersonaRanking");
+            var mappedCharacterPersonas = await myCache.GetOrDefaultAsync(cacheKey);
+
+            var totalCount = 0;
+            var filteredCount = 0;
+            if (mappedCharacterPersonas == null)
+            {
+                var validUntil = DateTimeOffset.Now.AddMinutes(15);
+
+                var query = GetCharacterPersonasQuery(characterId, withProperties: true).AsNoTracking();
+                var allCharacterPersonas = await query.ToListAsync();
+
+                totalCount = allCharacterPersonas.Count;
+                mappedCharacterPersonas = MapCharacterPersonas(allCharacterPersonas);
+
+                await myCache.SetAsync(
+                    key: cacheKey,
+                    value: mappedCharacterPersonas,
+                    absoluteExpireTime: validUntil
+                );
+            }
+            else
+            {
+                totalCount = mappedCharacterPersonas.Count;
+            }
+
+            var filteredList = mappedCharacterPersonas
+                .WhereIf(!input.PersonaName.IsNullOrEmpty(), cp => (
+                    cp.Persona != null) &&
+                    (cp.Persona.Name != null && cp.Persona.Name.IndexOf(input.PersonaName, StringComparison.OrdinalIgnoreCase) >= 0
+                     || cp.Persona.TwitterHandle != null && cp.Persona.TwitterHandle.IndexOf(input.PersonaName, StringComparison.OrdinalIgnoreCase) >= 0))
+                .ToList();
+
+            filteredCount = filteredList.Count;
+            if (filteredCount == 0 || filteredCount < input.SkipCount)
+            {
+                return new PagedResultDto<CharacterPersonaRankListDto>
+                {
+                    TotalCount = 0,
+                    Items = new List<CharacterPersonaRankListDto>()
+                };
+            }
+            else if (filteredCount < totalCount)
+            {
+                totalCount = filteredCount;
+            }
+
+            if (!string.IsNullOrEmpty(input.Sorting))
+            {
+                filteredList = filteredList
+                    .AsQueryable()
+                    .OrderBy(input.Sorting)
+                    .ToList();
+            }
+
+            var filteredPagedList = filteredList
+                .Skip(input.SkipCount)
+                .Take(input.MaxResultCount)
+                .ToList();
 
             return new PagedResultDto<CharacterPersonaRankListDto>
             {
-                TotalCount = queryCount,
-                Items = mappedResult
+                TotalCount = totalCount,
+                Items = filteredPagedList
             };
         }
 
-
-
-        private IQueryable<CharacterPersona> GetCharacterPersonasQuery(bool withProperties)
+        private IQueryable<CharacterPersona> GetCharacterPersonasQuery(Guid characterId, bool withProperties = false)
         {
             var query = _characterpersonaRepository.GetAll().AsNoTracking();
 
@@ -79,33 +155,19 @@ namespace Icon.Matrix.CharacterPersonas
                         .ThenInclude(x => x.Platform);
             }
 
-            return query;
-        }
-
-        private async Task<int> GetCharacterPersonaCount(IQueryable<CharacterPersona> query)
-        {
-            var queryCount = await query.CountAsync();
-            return queryCount;
-        }
-
-        private IQueryable<CharacterPersona> ApplyFiltering(IQueryable<CharacterPersona> query, GetCharacterPersonasInput input)
-        {
-            query = query
-                .Where(x => x.TwitterRank != null)
-                .WhereIf(!input.CharacterName.IsNullOrEmpty(),
-                    x => x.Character.Name.Contains(input.CharacterName))
-                .WhereIf(!input.PersonaName.IsNullOrEmpty(),
-                    x => x.Persona.Name.Contains(input.PersonaName));
+            query = query.Where(x => x.CharacterId == characterId && x.TwitterRank != null && x.TwitterBlockInRanking == false);
 
             return query;
         }
 
         private List<CharacterPersonaRankListDto> MapCharacterPersonas(List<CharacterPersona> cps)
         {
+            var scores = cps.Select(cp => cp.TwitterRank.TotalScoreTimeDecayed).ToList();
+            var minScore = scores.Min();
+            var maxScore = scores.Max();
+
             return cps.Select(cp => new CharacterPersonaRankListDto
             {
-                Id = cp.Id,
-                Character = ObjectMapper.Map<CharacterSimpleDto>(cp.Character),
                 Persona = new PersonaTwitterDto
                 {
                     Id = cp.Persona.Id,
@@ -114,46 +176,23 @@ namespace Icon.Matrix.CharacterPersonas
                     TwitterAvatarUrl = cp.TwitterProfile?.Avatar
                 },
                 TwitterRank = ObjectMapper.Map<CharacterPersonaTwitterRankDto>(cp.TwitterRank),
-
-                Attitude = cp.Attitude,
-                ShouldImportNewPosts = cp.ShouldImportNewPosts,
-                ShouldRespondMentions = cp.ShouldRespondMentions,
-                ShouldRespondNewPosts = cp.ShouldRespondNewPosts,
-                RowSettings = new BaseManagement.BaseListRowSettingsDto
-                {
-                    CanOpen = true,
-                    CanEdit = false,
-                }
+                GardnerLevel = CalculateGardnerLevel(cp.TwitterRank.TotalScoreTimeDecayed, minScore, maxScore)
             }).ToList();
         }
 
-        // private string GetTwitterAvatarUrl(string platformPersonaId)
-        // {
-        //     if (platformPersonaId.IsNullOrEmpty())
-        //     {
-        //         return null;
-        //     }
-
-        //     // if id starts with @, remove it
-        //     var username = platformPersonaId.StartsWith("@") ? platformPersonaId.Substring(1) : platformPersonaId;
-        //     var url = $"https://x.com/{username}/photo";
-
-        //     return url;
-        // }
-
-        private List<CharacterPersonaRankListDto> ApplyRowSettings(List<CharacterPersonaRankListDto> ranks)
+        private int CalculateGardnerLevel(double totalScore, double minScore, double maxScore)
         {
-            foreach (var characterpersona in ranks)
-            {
-                characterpersona.RowSettings = new BaseManagement.BaseListRowSettingsDto
-                {
-                    CanOpen = true,
-                    CanEdit = true,
-                };
-            }
+            var scorePercentage = (totalScore - minScore) / (maxScore - minScore) * 100;
 
-            return ranks;
+            if (scorePercentage > 80) return 5; // Top 20%
+            if (scorePercentage > 60) return 4; // Top 40%
+            if (scorePercentage > 40) return 3; // Top 60%
+            if (scorePercentage > 20) return 2; // Top 80%
+
+            return 1; // Bottom 20%
         }
+
+
 
     }
 }

@@ -211,7 +211,12 @@ namespace Icon.Matrix
         {
             var characterBioId = await _characterManager.GetActiveCharacterBioId(characterId);
             var platformId = await _platformManager.GetPlatformId("Twitter");
-            var characterPersonaId = await _characterManager.GetCharacterPersonaId(characterId, platformId, mentionByPersonaPlatformId, mentionedByPersonaName);
+            var characterPersonaId = await _characterManager.GetCharacterPersonaId(
+                characterId,
+                platformId,
+                mentionByPersonaPlatformId,
+                mentionedByPersonaName
+            );
 
             var memory = new Memory
             {
@@ -230,51 +235,43 @@ namespace Icon.Matrix
                 MemoryStatsTwitter = memoryStatsTwitter
             };
 
-
-            var existingMemory = await _memoryRepository
+            var existing = await _memoryRepository
                 .GetAll()
                 .Include(m => m.MemoryStatsTwitter)
-                .Where(m =>
-                    m.CharacterId == characterId &&
-                    m.PlatformInteractionId == tweetId
-                )
+                .Where(m => m.CharacterId == characterId && m.PlatformInteractionId == tweetId)
                 .FirstOrDefaultAsync();
 
-            if (existingMemory != null)
+            if (existing != null)
             {
-                existingMemory.MemoryContent = tweetContent;
-                existingMemory.MemoryUrl = tweetUrl;
-                existingMemory.PlatformInteractionParentId = conversationId;
-                existingMemory.PlatformInteractionDate = platformInteractionDate;
-
-                if (existingMemory.MemoryStatsTwitter == null)
+                existing.MemoryContent = tweetContent;
+                existing.MemoryUrl = tweetUrl;
+                existing.PlatformInteractionParentId = conversationId;
+                existing.PlatformInteractionDate = platformInteractionDate;
+                if (existing.MemoryStatsTwitter == null)
                 {
-                    existingMemory.MemoryStatsTwitter = memoryStatsTwitter;
+                    existing.MemoryStatsTwitter = memoryStatsTwitter;
                 }
                 else
                 {
-                    existingMemory.MemoryStatsTwitter.IsPin = memoryStatsTwitter.IsPin;
-                    existingMemory.MemoryStatsTwitter.IsQuoted = memoryStatsTwitter.IsQuoted;
-                    existingMemory.MemoryStatsTwitter.IsReply = memoryStatsTwitter.IsReply;
-                    existingMemory.MemoryStatsTwitter.IsRetweet = memoryStatsTwitter.IsRetweet;
-                    existingMemory.MemoryStatsTwitter.SensitiveContent = memoryStatsTwitter.SensitiveContent;
-                    existingMemory.MemoryStatsTwitter.BookmarkCount = memoryStatsTwitter.BookmarkCount;
-                    existingMemory.MemoryStatsTwitter.Likes = memoryStatsTwitter.Likes;
-                    existingMemory.MemoryStatsTwitter.Replies = memoryStatsTwitter.Replies;
-                    existingMemory.MemoryStatsTwitter.Retweets = memoryStatsTwitter.Retweets;
-                    existingMemory.MemoryStatsTwitter.Views = memoryStatsTwitter.Views;
-                    existingMemory.MemoryStatsTwitter.TweetWordCount = memoryStatsTwitter.TweetWordCount;
-                    existingMemory.MemoryStatsTwitter.MentionsCount = memoryStatsTwitter.MentionsCount;
+                    existing.MemoryStatsTwitter.IsPin = memoryStatsTwitter.IsPin;
+                    existing.MemoryStatsTwitter.IsQuoted = memoryStatsTwitter.IsQuoted;
+                    existing.MemoryStatsTwitter.IsReply = memoryStatsTwitter.IsReply;
+                    existing.MemoryStatsTwitter.IsRetweet = memoryStatsTwitter.IsRetweet;
+                    existing.MemoryStatsTwitter.SensitiveContent = memoryStatsTwitter.SensitiveContent;
+                    existing.MemoryStatsTwitter.BookmarkCount = memoryStatsTwitter.BookmarkCount;
+                    existing.MemoryStatsTwitter.Likes = memoryStatsTwitter.Likes;
+                    existing.MemoryStatsTwitter.Replies = memoryStatsTwitter.Replies;
+                    existing.MemoryStatsTwitter.Retweets = memoryStatsTwitter.Retweets;
+                    existing.MemoryStatsTwitter.Views = memoryStatsTwitter.Views;
+                    existing.MemoryStatsTwitter.TweetWordCount = memoryStatsTwitter.TweetWordCount;
+                    existing.MemoryStatsTwitter.MentionsCount = memoryStatsTwitter.MentionsCount;
                 }
-
-                memory = await UpdateMemory(existingMemory);
+                return await UpdateMemory(existing);
             }
             else
             {
-                memory = await CreateMemory(memory);
+                return await CreateMemory(memory);
             }
-
-            return memory;
         }
     }
 }

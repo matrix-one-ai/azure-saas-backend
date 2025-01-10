@@ -18,6 +18,8 @@ namespace Icon.Matrix.CharacterPersonas.Forms
         public bool ShouldRespondMentions { get; set; }
         public bool ShouldImportNewPosts { get; set; }
         public bool PersonaIsAi { get; set; }
+        public bool TwitterBlockInRanking { get; set; }
+
         public BaseModalType ModalType { get; set; }
 
         public PersonaPlatform Twitter { get; set; }
@@ -52,6 +54,7 @@ namespace Icon.Matrix.CharacterPersonas.Forms
             ShouldImportNewPosts = characterPersona.ShouldImportNewPosts;
 
             PersonaIsAi = characterPersona.PersonaIsAi;
+            TwitterBlockInRanking = characterPersona.TwitterBlockInRanking;
 
             var personaPlatforms = characterPersona.Persona.Platforms.Select(p => new PersonaPlatform
             {
@@ -140,6 +143,11 @@ namespace Icon.Matrix.CharacterPersonas.Forms
         {
             Character = new Character();
             Persona = new Persona { Id = Guid.NewGuid() };
+            ShouldRespondMentions = true;
+            ShouldImportNewPosts = false;
+            ShouldRespondNewPosts = false;
+            PersonaIsAi = false;
+            TwitterBlockInRanking = false;
 
             var personaPlatforms = platforms?.Select(p => new PersonaPlatform
             {

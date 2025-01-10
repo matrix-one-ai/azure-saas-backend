@@ -358,7 +358,38 @@ namespace Icon.Matrix
                 return false;
             }
 
-            await LogAsync(process.Id, stepId, $"I know {personaName} and Matrix wants me to respond, great, I will respond!", "Thought");
+            var parent = memory.MemoryParentId.HasValue
+              ? await _memoryParentRepository.FirstOrDefaultAsync(memory.MemoryParentId.Value)
+              : null;
+
+            if (parent != null)
+            {
+                if (parent.CharacterReplyCount >= 3)
+                {
+                    await LogAsync(process.Id, stepId, $"I have already replied 3 times in this conversation {memory.PlatformInteractionParentId}, I wont reply anymore", "Thought");
+                    return false;
+                }
+            }
+
+            var memoryTypeId = await GetMemoryTypeId("CharacterMentionedTweet");
+
+            var repliedMentionsLast24Hours = await _memoryRepository
+                .GetAll()
+                .Where(m =>
+                    m.CharacterPersonaId == memory.CharacterPersonaId
+                    && m.CreatedAt >= DateTimeOffset.UtcNow.AddDays(-1)
+                    && m.MemoryTypeId == memoryTypeId
+                    && m.IsActionTaken == true
+                )
+                .CountAsync();
+
+            if (repliedMentionsLast24Hours >= 3)
+            {
+                await LogAsync(process.Id, stepId, $"I have already replied 3 times in the last 24 hours to {personaName}, I wont reply anymore", "Thought");
+                return false;
+            }
+
+            await LogAsync(process.Id, stepId, $"I know {personaName} and I see no reason not to reply, I will respond!", "Thought");
             return true;
         }
 
@@ -420,7 +451,7 @@ namespace Icon.Matrix
         {
             if (memory.IsActionTaken)
             {
-                await LogAsync(process.Id, stepId, "Tweet already replied, skipping this step", "Thought");
+                await LogAsync(process.Id, stepId, "Tweet already replied", "Thought");
                 return true;
             }
 
@@ -428,13 +459,13 @@ namespace Icon.Matrix
 
             if (!memory.Character.IsTwitterPostingEnabled)
             {
-                await LogAsync(process.Id, stepId, "I am not allowed to post, skipping this step", "Thought");
+                await LogAsync(process.Id, stepId, "I am not allowed to post as Character, posting is disabled", "Thought");
                 return false;
             }
 
             if (memory.Character.TwitterPostAgentId == null)
             {
-                await LogAsync(process.Id, stepId, "I am missing an agent to post with!", "Error");
+                await LogAsync(process.Id, stepId, "Character is missing an agent to post with!", "Error");
                 return false;
             }
 
@@ -443,13 +474,13 @@ namespace Icon.Matrix
 
             if (tweetId == null)
             {
-                await LogAsync(process.Id, stepId, "TweetId is null, cant reply to tweet", "Thought");
+                await LogAsync(process.Id, stepId, "TweetId is null, cant reply to tweet", "Error");
                 return false;
             }
 
             if (prompt == null)
             {
-                await LogAsync(process.Id, stepId, "Prompt is null, cant reply to tweet", "Thought");
+                await LogAsync(process.Id, stepId, "Prompt is null, cant reply to tweet", "Error");
                 return false;
             }
 
@@ -475,7 +506,8 @@ namespace Icon.Matrix
                 return false;
             }
 
-            await LogAsync(process.Id, stepId, $"Replying mention with: {tweetContent}", "Thought");
+            var personaName = memory.CharacterPersona?.Persona?.Name;
+            await LogAsync(process.Id, stepId, $"Replying mention of {personaName} with: {tweetContent}", "Thought");
 
             try
             {
@@ -491,7 +523,18 @@ namespace Icon.Matrix
                     tweetContent: tweetContent
                 );
 
-                await LogAsync(process.Id, stepId, "Reply posted successfully", "Info");
+                await LogAsync(process.Id, stepId, $"Successfully replied to mention of {personaName}", "Thought");
+
+                var parent = memory.MemoryParentId.HasValue
+                    ? await _memoryParentRepository.FirstOrDefaultAsync(memory.MemoryParentId.Value)
+                    : null;
+
+                if (parent != null)
+                {
+                    parent.CharacterReplyCount++;
+                    await _memoryParentRepository.UpdateAsync(parent);
+                }
+
                 return true;
             }
             catch (Exception e)

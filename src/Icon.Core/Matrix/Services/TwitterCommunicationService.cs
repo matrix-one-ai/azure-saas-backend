@@ -27,7 +27,6 @@ namespace Icon.Matrix.Twitter
 
         Task<TwitterScraperPostTweetResponse> PostScraperTweetAsync(string twitterAgentId, string text);
         Task<TwitterScraperPostTweetResponse> ReplyToScraperTweetAsync(string twitterAgentId, string tweetId, string text);
-
     }
 
     public class TwitterCommunicationService : ITwitterCommunicationService, ITransientDependency
@@ -42,7 +41,6 @@ namespace Icon.Matrix.Twitter
         {
             _logger = logger;
             _configuration = appConfigurationAccessor.Configuration;
-
             InitializeHttpClient();
         }
 
@@ -71,6 +69,9 @@ namespace Icon.Matrix.Twitter
 
                 _httpClient.DefaultRequestHeaders.Add("x-api-key", apiKey);
                 _httpClient.DefaultRequestHeaders.Accept.Add(new System.Net.Http.Headers.MediaTypeWithQualityHeaderValue("application/json"));
+
+                // Allow large response buffering if needed
+                _httpClient.MaxResponseContentBufferSize = 1024 * 1024 * 100;
             }
         }
 
@@ -108,13 +109,19 @@ namespace Icon.Matrix.Twitter
             try
             {
                 var response = await requestFunc();
-                response.EnsureSuccessStatusCode();
+                if (!response.IsSuccessStatusCode)
+                {
+                    var errorMessage = $"Response status code does not indicate success: {response.StatusCode} ({(int)response.StatusCode}).";
+                    _logger.LogError(errorMessage);
+                    response.EnsureSuccessStatusCode();
+                }
+
                 return await response.Content.ReadFromJsonAsync<T>() ?? Activator.CreateInstance<T>();
             }
             catch (Exception ex)
             {
                 _logger.LogError(ex, $"Error during {operationDescription}: {ex.Message}");
-                return Activator.CreateInstance<T>();
+                throw;
             }
         }
 
@@ -185,10 +192,9 @@ namespace Icon.Matrix.Twitter
         public Task<TwitterScraperPostTweetResponse> ReplyToScraperTweetAsync(string twitterAgentId, string tweetId, string text)
         {
             return ExecuteRequestAsync<TwitterScraperPostTweetResponse>(
-                () => _httpClient.PostAsJsonAsync("/replyToScraperTweet", new { agentId = twitterAgentId, tweetId, text }),
+                () => _httpClient.PostAsJsonAsync("/replyScraperTweet", new { agentId = twitterAgentId, tweetId, text }),
                 $"ReplyToScraperTweetAsync for tweetId: {tweetId}"
             );
         }
     }
-
 }

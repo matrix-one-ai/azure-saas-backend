@@ -56,6 +56,7 @@ namespace Icon.Matrix.CharacterPersonas
                 CharacterPersonaForm.GetSetupSection(),
                 CharacterPersonaForm.GetCharacterSelectSection(characters.Select(c => new BaseFormDropdownOptionDto { Id = c.Id, Name = c.Name }).ToList()),
                 CharacterPersonaForm.GetPersonaSection(),
+                CharacterPersonaForm.GetPersonaRulesSection(),
                 CharacterPersonaForm.GetPlatformsSection(),
             };
 
@@ -105,6 +106,7 @@ namespace Icon.Matrix.CharacterPersonas
                 CharacterPersonaForm.GetSetupSection(),
                 CharacterPersonaForm.GetCharacterSection(),
                 CharacterPersonaForm.GetPersonaSection().DisableAllFields(),
+                CharacterPersonaForm.GetPersonaRulesSection().DisableAllFields(),
                 CharacterPersonaForm.GetPlatformsSection().DisableAllFields(),
             };
 
@@ -154,6 +156,7 @@ namespace Icon.Matrix.CharacterPersonas
             CharacterPersonaForm.GetSetupSection(),
             CharacterPersonaForm.GetCharacterSection(),
             CharacterPersonaForm.GetPersonaSection(),
+            CharacterPersonaForm.GetPersonaRulesSection(),
             CharacterPersonaForm.GetPlatformsSection(),
         };
 
@@ -217,6 +220,12 @@ namespace Icon.Matrix.CharacterPersonas
             entity.Persona.Name = formModel.Persona.Name;
             entity.Attitude = formModel.Attitude;
             entity.Repsonses = formModel.Responses;
+            entity.ShouldRespondNewPosts = formModel.ShouldRespondNewPosts;
+            entity.ShouldRespondMentions = formModel.ShouldRespondMentions;
+            entity.ShouldImportNewPosts = formModel.ShouldImportNewPosts;
+            entity.PersonaIsAi = formModel.PersonaIsAi;
+            entity.TwitterBlockInRanking = formModel.TwitterBlockInRanking;
+
             UpdatePersonaPlatforms(entity, formModel);
 
             await _characterManager.UpdateCharacterPersona(entity);

@@ -81,6 +81,7 @@ namespace Icon.Matrix
         public async Task ProcessCharacterTwitterImports()
         {
             AbpSession.Use(2, 3);
+
             await _twitterManager.ProcessCharacterTweetImports();
             await _twitterManager.ProcessCharacterTweetsStorage();
             await _twitterManager.ProcessMissingTwitterProfiles();
@@ -103,7 +104,7 @@ namespace Icon.Matrix
             await _twitterManager.ProcessCharacterPostTweets();
         }
 
-        private async Task ProcessCharacterPersonaRanking()
+        public async Task ProcessCharacterPersonaRanking()
         {
             var sql = @"
 TRUNCATE TABLE CharacterPersonaTwitterRanks;
@@ -172,6 +173,7 @@ WITH PersonaScores AS (
     INNER JOIN Personas p
         ON cp.PersonaId = p.Id
     WHERE mt.Name = 'CharacterMentionedTweet'
+    AND cp.TwitterBlockInRanking = 0 
     GROUP BY c.Id, c.Name, cp.Id, p.Id, p.Name
 )
 

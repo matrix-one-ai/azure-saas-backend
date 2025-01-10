@@ -71,6 +71,31 @@ namespace Icon.Matrix.CharacterPersonas.Forms
             }
         };
 
+        public static BaseFormSectionDto GetPersonaRulesSection() => new BaseFormSectionDto
+        {
+            SectionTitle = "PersonaRules",
+            Rows = new List<BaseFormRowDto>
+            {
+                new BaseFormRowDto
+                {
+                    Fields = new List<BaseFormFieldDto>
+                    {
+                        CharacterPersonaFormFields.GetShouldRespondMentions(),
+                        CharacterPersonaFormFields.GetShouldImportNewPosts(),
+                        CharacterPersonaFormFields.GetShouldRespondNewPosts(),
+                    }
+                },
+                new BaseFormRowDto
+                {
+                    Fields = new List<BaseFormFieldDto>
+                    {
+                        CharacterPersonaFormFields.GetPersonaIsAi(),
+                        CharacterPersonaFormFields.GetTwitterBlockInRanking()
+                    }
+                }
+            }
+        };
+
         public static BaseFormSectionDto GetPlatformsSection() => new BaseFormSectionDto
         {
             SectionTitle = "Platforms",

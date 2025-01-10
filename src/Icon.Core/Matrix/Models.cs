@@ -127,9 +127,11 @@ namespace Icon.Matrix.Models
         public bool ShouldRespondNewPosts { get; set; }
         public bool ShouldRespondMentions { get; set; }
         public bool ShouldImportNewPosts { get; set; }
+        public bool TwitterBlockInRanking { get; set; }
+        public bool PersonaIsAi { get; set; }
         public bool WelcomeMessageSent { get; set; }
         public DateTime? WelcomeMessageSentAt { get; set; }
-        public bool PersonaIsAi { get; set; }
+
         public CharacterPersonaTwitterRank TwitterRank { get; set; }
         public CharacterPersonaTwitterProfile TwitterProfile { get; set; }
     }
@@ -143,11 +145,29 @@ namespace Icon.Matrix.Models
         public string PlatformPersonaId { get; set; }
     }
 
+
+    public class MemoryParent : Entity<Guid>, IMustHaveTenant
+    {
+        public int TenantId { get; set; }
+        public string PlatformInteractionParentId { get; set; }
+        public int MemoryCount { get; set; }
+        public int CharacterReplyCount { get; set; }
+        public int UniquePersonasCount { get; set; }
+        public DateTimeOffset? LastReplyAt { get; set; }
+        public IList<Memory> Memories { get; set; } = new List<Memory>();
+    }
+
+
     public class Memory : Entity<Guid>, IMustHaveTenant
     {
         public int TenantId { get; set; }
+
+        public Guid? MemoryParentId { get; set; }
+        public MemoryParent MemoryParent { get; set; }
+
         public Guid CharacterId { get; set; }
         public Character Character { get; set; }
+
         public Guid CharacterBioId { get; set; }
         public CharacterBio CharacterBio { get; set; }
 
@@ -218,6 +238,7 @@ namespace Icon.Matrix.Models
     //     public string Exception { get; set; }
     //     public string ExceptionMessage { get; set; }
     // }
+
 
 
     public class MemoryStatsTwitter : Entity<Guid>, IMustHaveTenant

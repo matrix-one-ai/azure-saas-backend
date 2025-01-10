@@ -41,7 +41,9 @@ namespace Icon.EntityFrameworkCore
         public virtual DbSet<CharacterPersonaTwitterRank> CharacterPersonaTwitterRanks { get; set; }
         public virtual DbSet<CharacterPersonaTwitterProfile> CharacterPersonaTwitterProfiles { get; set; }
 
+
         public virtual DbSet<Memory> Memories { get; set; }
+        public virtual DbSet<MemoryParent> MemoryParents { get; set; }
         public virtual DbSet<MemoryType> MemoryTypes { get; set; }
         public virtual DbSet<MemoryTopic> MemoryTopics { get; set; }
         public virtual DbSet<MemoryStatsTwitter> MemoryStatsTwitters { get; set; }
@@ -151,6 +153,19 @@ namespace Icon.EntityFrameworkCore
             modelBuilder.Entity<Memory>()
                 .HasIndex(m => m.PlatformInteractionDate)
                 .HasDatabaseName("IX_Memory_PlatformInteractionDate");
+            modelBuilder.Entity<Memory>()
+                .HasIndex(m => m.PlatformInteractionId)
+                .HasDatabaseName("IX_Memory_PlatformInteractionId");
+            modelBuilder.Entity<Memory>()
+                .HasIndex(m => m.PlatformInteractionParentId)
+                .HasDatabaseName("IX_Memory_PlatformInteractionParentId");
+            modelBuilder.Entity<Memory>()
+                .HasIndex(m => m.CreatedAt)
+                .HasDatabaseName("IX_Memory_CreatedAt");
+
+            modelBuilder.Entity<MemoryParent>()
+                .HasIndex(m => m.PlatformInteractionParentId)
+                .HasDatabaseName("IX_MemoryParent_PlatformInteractionParentId");
 
             // modelBuilder.Entity<CharacterBio>()
             //     .HasOne(cb => cb.Character)

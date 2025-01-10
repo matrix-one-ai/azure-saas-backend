@@ -12,6 +12,7 @@ public class GetCharacterPersonasInput : PagedAndSortedInputDto, IShouldNormaliz
     public string CharacterName { get; set; }
     public string PlatformName { get; set; }
     public string PersonaName { get; set; }
+
     public void Normalize()
     {
         if (Sorting.IsNullOrWhiteSpace())

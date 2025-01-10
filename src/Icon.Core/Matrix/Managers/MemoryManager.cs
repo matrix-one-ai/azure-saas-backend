@@ -15,6 +15,7 @@ using Icon.Matrix.Models;
 using Icon.Matrix.Twitter;
 using Microsoft.EntityFrameworkCore;
 using Newtonsoft.Json;
+using Org.BouncyCastle.Security;
 
 namespace Icon.Matrix
 {
@@ -35,6 +36,7 @@ namespace Icon.Matrix
         private readonly IRepository<MemoryProcess, Guid> _memoryProcessRepository;
         private readonly IRepository<MemoryProcessStep, Guid> _memoryProcessStepRepository;
         private readonly IRepository<MemoryProcessLog, Guid> _memoryProcessLogRepository;
+        private readonly IRepository<MemoryParent, Guid> _memoryParentRepository;
 
         private readonly IAIManager _aiManager;
         private readonly ITwitterManager _twitterManager;
@@ -47,6 +49,7 @@ namespace Icon.Matrix
 
 
         public MemoryManager(
+            IRepository<MemoryParent, Guid> memoryParentRepository,
             IRepository<Memory, Guid> memoryRepository,
             IRepository<MemoryType, Guid> memoryTypeRepository,
             IRepository<MemoryPrompt, Guid> memoryPromptRepository,
@@ -63,9 +66,11 @@ namespace Icon.Matrix
             IUnitOfWorkManager unitOfWorkManager,
             IAbpSession abpSession)
         {
+            _memoryParentRepository = memoryParentRepository;
             _memoryRepository = memoryRepository;
             _memoryTypeRepository = memoryTypeRepository;
             _memoryPromptRepository = memoryPromptRepository;
+
             _cpTwitterRankRepository = cpTwitterRankRepository;
             _memoryProcessRepository = memoryProcessRepository;
             _memoryProcessStepRepository = memoryProcessStepRepository;
@@ -118,6 +123,8 @@ namespace Icon.Matrix
 
         public async Task<Memory> CreateMemory(Memory memory)
         {
+            memory.MemoryParentId = await EnsureMemoryParent(memory);
+
             using (var uow = _unitOfWorkManager.Begin())
             {
                 memory = await _memoryRepository.InsertAsync(memory);
@@ -125,24 +132,31 @@ namespace Icon.Matrix
                 uow.Complete();
             }
 
-            // exclude A4C40AD1-83E2-489A-E4D8-08DD13B31247
-            var excludedCharacters = new List<Guid> { Guid.Parse("A4C40AD1-83E2-489A-E4D8-08DD13B31247") }; // sami
+            // Trigger a memory process as before (excluded characters, etc.)
+            var excludedCharacters = new List<Guid> { Guid.Parse("A4C40AD1-83E2-489A-E4D8-08DD13B31247") };
             if (!excludedCharacters.Contains(memory.CharacterId))
             {
                 await CreateMemoryProcess(memory.Id);
             }
+
+            await UpdateMemoryParentTotals(memory.MemoryParentId);
 
             return memory;
         }
 
         public async Task<Memory> UpdateMemory(Memory memory)
         {
+            memory.MemoryParentId = await EnsureMemoryParent(memory);
+
             using (var uow = _unitOfWorkManager.Begin())
             {
                 memory = await _memoryRepository.UpdateAsync(memory);
                 await _unitOfWorkManager.Current.SaveChangesAsync();
+
                 uow.Complete();
             }
+
+            await UpdateMemoryParentTotals(memory.MemoryParentId);
 
             return memory;
         }
@@ -156,7 +170,6 @@ namespace Icon.Matrix
                 uow.Complete();
             }
         }
-
 
         public async Task<Guid> GetMemoryTypeId(string name)
         {
@@ -197,6 +210,99 @@ namespace Icon.Matrix
             var memoryTypes = await _memoryTypeRepository.GetAllListAsync();
             return memoryTypes;
         }
+
+
+        private async Task<Guid?> EnsureMemoryParent(Memory memory)
+        {
+            if (string.IsNullOrEmpty(memory.PlatformInteractionParentId))
+            {
+                memory.MemoryParentId = null;
+                return null;
+            }
+
+            using (var uow = _unitOfWorkManager.Begin())
+            {
+                var parent = await _memoryParentRepository
+                    .GetAll()
+                    .Include(x => x.Memories)
+                    .Where(x =>
+                        x.TenantId == memory.TenantId &&
+                        x.PlatformInteractionParentId == memory.PlatformInteractionParentId
+                    )
+                    .FirstOrDefaultAsync();
+
+                if (parent == null)
+                {
+                    parent = new MemoryParent
+                    {
+                        Id = Guid.NewGuid(),
+                        TenantId = memory.TenantId,
+                        PlatformInteractionParentId = memory.PlatformInteractionParentId,
+                        MemoryCount = 0,
+                        CharacterReplyCount = 0,
+                        UniquePersonasCount = 0
+                    };
+
+                    parent = await _memoryParentRepository.InsertAsync(parent);
+                    await _unitOfWorkManager.Current.SaveChangesAsync();
+                }
+
+                var oldParentId = memory.MemoryParentId;
+                if (oldParentId != parent.Id)
+                {
+                    parent.MemoryCount = parent.MemoryCount + 1;
+                }
+
+                var isReply = false;
+                if (memory.MemoryType?.Name == "CharacterReplyTweet")
+                {
+                    isReply = true;
+                }
+
+                if (isReply && oldParentId != parent.Id)
+                {
+                    parent.CharacterReplyCount++;
+                    parent.LastReplyAt = memory.PlatformInteractionDate ?? DateTimeOffset.UtcNow;
+                }
+
+                await _memoryParentRepository.UpdateAsync(parent);
+                await _unitOfWorkManager.Current.SaveChangesAsync();
+                uow.Complete();
+
+                return parent.Id;
+            }
+        }
+
+        private async Task UpdateMemoryParentTotals(Guid? memoryParentId)
+        {
+            if (memoryParentId == null)
+            {
+                return;
+            }
+
+            using (var uow = _unitOfWorkManager.Begin())
+            {
+                var parent = await _memoryParentRepository
+                    .GetAll()
+                    .Include(x => x.Memories)
+                    .Where(x => x.Id == memoryParentId)
+                    .FirstOrDefaultAsync();
+
+                if (parent == null)
+                {
+                    return;
+                }
+
+                parent.UniquePersonasCount = parent.Memories.Select(x => x.CharacterPersonaId).Distinct().Count();
+
+                await _memoryParentRepository.UpdateAsync(parent);
+                await _unitOfWorkManager.Current.SaveChangesAsync();
+
+                uow.Complete();
+            }
+
+        }
+
 
 
 

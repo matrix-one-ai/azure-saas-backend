@@ -5,6 +5,7 @@
     <!-- Entities -->
     <text name="CharacterPersona">Character persona</text>
     <text name="CharacterPersonas">Personas</text>
+    <text name="PersonaRules">Persona rules</text>
     <text name="CharacterTweet">Tweet - Character</text>
     <text name="CharacterMentionedTweet">Tweet - Mentioned</text>
     <text name="CharacterPersonaTweet">Tweet - Persona</text>
@@ -91,6 +92,13 @@
     <text name="FormField.Label.CurrentBio.CrisisBehavior">Crisis behavior</text>
     <text name="FormField.Label.CurrentBio.Relationships">Relationships</text>
     <text name="FormField.Label.CurrentBio.TechDetails">Tech details</text>
+
+    <text name="FormField.Label.ShouldRespondMentions">Respond mentions</text>
+    <text name="FormField.Label.ShouldRespondNewPosts">Respond new posts</text>
+    <text name="FormField.Label.ShouldImportNewPosts">Import new posts</text>
+    <text name="FormField.Label.PersonaIsAi">Persona is AI</text>
+    <text name="FormField.Label.TwitterBlockInRanking">Block in ranking</text>
+
 
 
     <!-- Form Validation -->

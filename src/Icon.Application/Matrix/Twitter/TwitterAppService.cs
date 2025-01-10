@@ -22,12 +22,69 @@ using Icon.Authorization;
 using Icon.Matrix.Twitter.Dto;
 using Icon.Matrix.Twitter.Inputs;
 using Icon.Matrix.Models;
+using Icon.Matrix.Portal.Dto;
 
 namespace Icon.Matrix
 {
     [AbpAuthorize]
     public class TwitterAppService : IconAppServiceBase
     {
+        private readonly IRepository<Character, Guid> _characterRepository;
+        private readonly IRepository<Memory, Guid> _memoryRepository;
+        private readonly IRepository<MemoryType, Guid> _memoryTypeRepository;
+
+        public TwitterAppService(
+            IRepository<Character, Guid> characterRepository,
+            IRepository<Memory, Guid> memoryRepository,
+            IRepository<MemoryType, Guid> memoryTypeRepository)
+        {
+            _characterRepository = characterRepository;
+            _memoryRepository = memoryRepository;
+            _memoryTypeRepository = memoryTypeRepository;
+        }
+
+        public async Task<PagedResultDto<CharacterTweetDto>> GetPlantLatestTweets()
+        {
+            var memoryTypeId = await _memoryTypeRepository
+                .GetAll()
+                .Where(x => x.Name == "CharacterTweet")
+                .Select(x => x.Id)
+                .FirstOrDefaultAsync();
+
+            var characterId = new Guid("77F38589-0DA9-4435-651C-08DD13B3124C"); // plant
+            //var characterId = new Guid("77F38589-0DA9-4435-651C-08DD13B3124D"); // saucepan
+
+            var tweets = await _memoryRepository
+                .GetAll()
+                .Include(x => x.MemoryStatsTwitter)
+                .Where(x =>
+                    x.MemoryTypeId == memoryTypeId &&
+                    x.CharacterId == characterId &&
+                    !x.MemoryContent.StartsWith("Welcome"))
+                .OrderByDescending(x => x.CreatedAt)
+                .Take(6)
+
+                .ToListAsync();
+
+            var tweetDtos = tweets.Select(t => new CharacterTweetDto
+            {
+                TweetUrl = t.MemoryUrl,
+                TweetDate = t.PlatformInteractionDate ?? t.CreatedAt,
+                BookmarkCount = t.MemoryStatsTwitter?.BookmarkCount ?? 0,
+                Likes = t.MemoryStatsTwitter?.Likes ?? 0,
+                Views = t.MemoryStatsTwitter?.Views ?? 0,
+                Replies = t.MemoryStatsTwitter?.Replies ?? 0,
+                Retweets = t.MemoryStatsTwitter?.Retweets ?? 0
+            }).ToList();
+
+            return new PagedResultDto<CharacterTweetDto>
+            {
+                TotalCount = tweetDtos.Count,
+                Items = tweetDtos
+            };
+        }
+
+
         // private readonly IRepository<Character, Guid> _characterRepository;
         // private readonly IRepository<CharacterBio, Guid> _characterBioRepository;
         // private readonly IRepository<CharacterPlatform, Guid> _characterPlatformRepository;

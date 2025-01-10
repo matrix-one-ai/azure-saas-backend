@@ -4,6 +4,7 @@ using Icon.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
 using Microsoft.EntityFrameworkCore.Metadata;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 
 #nullable disable
@@ -11,9 +12,11 @@ using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 namespace Icon.Migrations
 {
     [DbContext(typeof(IconDbContext))]
-    partial class IconDbContextModelSnapshot : ModelSnapshot
+    [Migration("20250108135951_AddedConvoPersonaLimits")]
+    partial class AddedConvoPersonaLimits
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        /// <inheritdoc />
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
@@ -2687,9 +2690,6 @@ namespace Icon.Migrations
                     b.Property<string>("MemoryContent")
                         .HasColumnType("nvarchar(max)");
 
-                    b.Property<Guid?>("MemoryParentId")
-                        .HasColumnType("uniqueidentifier");
-
                     b.Property<string>("MemoryTitle")
                         .HasColumnType("nvarchar(max)");
 
@@ -2699,6 +2699,9 @@ namespace Icon.Migrations
                     b.Property<string>("MemoryUrl")
                         .HasColumnType("nvarchar(max)");
 
+                    b.Property<Guid?>("ParentMemoryId")
+                        .HasColumnType("uniqueidentifier");
+
                     b.Property<Guid?>("PlatformId")
                         .HasColumnType("uniqueidentifier");
 
@@ -2706,10 +2709,10 @@ namespace Icon.Migrations
                         .HasColumnType("datetimeoffset");
 
                     b.Property<string>("PlatformInteractionId")
-                        .HasColumnType("nvarchar(450)");
+                        .HasColumnType("nvarchar(max)");
 
                     b.Property<string>("PlatformInteractionParentId")
-                        .HasColumnType("nvarchar(450)");
+                        .HasColumnType("nvarchar(max)");
 
                     b.Property<int>("RememberDays")
                         .HasColumnType("int");
@@ -2734,11 +2737,6 @@ namespace Icon.Migrations
 
                     b.HasIndex("CharacterPersonaId");
 
-                    b.HasIndex("CreatedAt")
-                        .HasDatabaseName("IX_Memory_CreatedAt");
-
-                    b.HasIndex("MemoryParentId");
-
                     b.HasIndex("MemoryTypeId");
 
                     b.HasIndex("PlatformId");
@@ -2746,45 +2744,7 @@ namespace Icon.Migrations
                     b.HasIndex("PlatformInteractionDate")
                         .HasDatabaseName("IX_Memory_PlatformInteractionDate");
 
-                    b.HasIndex("PlatformInteractionId")
-                        .HasDatabaseName("IX_Memory_PlatformInteractionId");
-
-                    b.HasIndex("PlatformInteractionParentId")
-                        .HasDatabaseName("IX_Memory_PlatformInteractionParentId");
-
                     b.ToTable("Memories");
-                });
-
-            modelBuilder.Entity("Icon.Matrix.Models.MemoryParent", b =>
-                {
-                    b.Property<Guid>("Id")
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("uniqueidentifier");
-
-                    b.Property<int>("CharacterReplyCount")
-                        .HasColumnType("int");
-
-                    b.Property<DateTimeOffset?>("LastReplyAt")
-                        .HasColumnType("datetimeoffset");
-
-                    b.Property<int>("MemoryCount")
-                        .HasColumnType("int");
-
-                    b.Property<string>("PlatformInteractionParentId")
-                        .HasColumnType("nvarchar(450)");
-
-                    b.Property<int>("TenantId")
-                        .HasColumnType("int");
-
-                    b.Property<int>("UniquePersonasCount")
-                        .HasColumnType("int");
-
-                    b.HasKey("Id");
-
-                    b.HasIndex("PlatformInteractionParentId")
-                        .HasDatabaseName("IX_MemoryParent_PlatformInteractionParentId");
-
-                    b.ToTable("MemoryParents");
                 });
 
             modelBuilder.Entity("Icon.Matrix.Models.MemoryProcess", b =>
@@ -4080,10 +4040,6 @@ namespace Icon.Migrations
                         .WithMany()
                         .HasForeignKey("CharacterPersonaId");
 
-                    b.HasOne("Icon.Matrix.Models.MemoryParent", "MemoryParent")
-                        .WithMany("Memories")
-                        .HasForeignKey("MemoryParentId");
-
                     b.HasOne("Icon.Matrix.Models.MemoryType", "MemoryType")
                         .WithMany()
                         .HasForeignKey("MemoryTypeId")
@@ -4099,8 +4055,6 @@ namespace Icon.Migrations
                     b.Navigation("CharacterBio");
 
                     b.Navigation("CharacterPersona");
-
-                    b.Navigation("MemoryParent");
 
                     b.Navigation("MemoryType");
 
@@ -4332,11 +4286,6 @@ namespace Icon.Migrations
                     b.Navigation("Prompts");
 
                     b.Navigation("Topics");
-                });
-
-            modelBuilder.Entity("Icon.Matrix.Models.MemoryParent", b =>
-                {
-                    b.Navigation("Memories");
                 });
 
             modelBuilder.Entity("Icon.Matrix.Models.MemoryProcess", b =>

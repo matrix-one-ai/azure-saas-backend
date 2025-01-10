@@ -63,6 +63,45 @@ namespace Icon.Matrix.CharacterPersonas.Forms
             isRequired: false
         );
 
+
+
+        public static BaseFormFieldDto GetShouldRespondNewPosts() => BaseFormFieldFactory.CreateCheckboxField(
+            fieldName: nameof(CharacterPersonaFormModel.ShouldRespondNewPosts),
+            valuePath: BaseHelper.GetPropertyPath<CharacterPersonaFormModel, bool>(f => f.ShouldRespondNewPosts),
+            isRequired: false,
+            columnWidth: 4
+        );
+
+        public static BaseFormFieldDto GetShouldRespondMentions() => BaseFormFieldFactory.CreateCheckboxField(
+            fieldName: nameof(CharacterPersonaFormModel.ShouldRespondMentions),
+            valuePath: BaseHelper.GetPropertyPath<CharacterPersonaFormModel, bool>(f => f.ShouldRespondMentions),
+            isRequired: false,
+            columnWidth: 4
+        );
+
+        public static BaseFormFieldDto GetShouldImportNewPosts() => BaseFormFieldFactory.CreateCheckboxField(
+            fieldName: nameof(CharacterPersonaFormModel.ShouldImportNewPosts),
+            valuePath: BaseHelper.GetPropertyPath<CharacterPersonaFormModel, bool>(f => f.ShouldImportNewPosts),
+            isRequired: false,
+            columnWidth: 4
+        );
+
+        public static BaseFormFieldDto GetPersonaIsAi() => BaseFormFieldFactory.CreateCheckboxField(
+            fieldName: nameof(CharacterPersonaFormModel.PersonaIsAi),
+            valuePath: BaseHelper.GetPropertyPath<CharacterPersonaFormModel, bool>(f => f.PersonaIsAi),
+            isRequired: false,
+            columnWidth: 4
+        );
+
+        public static BaseFormFieldDto GetTwitterBlockInRanking() => BaseFormFieldFactory.CreateCheckboxField(
+            fieldName: nameof(CharacterPersonaFormModel.TwitterBlockInRanking),
+            valuePath: BaseHelper.GetPropertyPath<CharacterPersonaFormModel, bool>(f => f.TwitterBlockInRanking),
+            isRequired: false,
+            columnWidth: 4
+        );
+
+
+
         public static BaseFormFieldDto GetTwitterPlatformId() => BaseFormFieldFactory.CreateTextField(
             fieldName: nameof(CharacterPersonaFormModel.Twitter) + "." + nameof(CharacterPersonaFormModel.Twitter.PlatformId),
             valuePath: BaseHelper.GetPropertyPath<CharacterPersonaFormModel, Guid>(f => f.Twitter.PlatformId),
