@@ -2263,6 +2263,9 @@ namespace Icon.Migrations
                     b.Property<bool>("ShouldRespondNewPosts")
                         .HasColumnType("bit");
 
+                    b.Property<string>("SolanaWallet")
+                        .HasColumnType("nvarchar(max)");
+
                     b.Property<int>("TenantId")
                         .HasColumnType("int");
 
@@ -2505,6 +2508,89 @@ namespace Icon.Migrations
                     b.ToTable("CharacterTopics");
                 });
 
+            modelBuilder.Entity("Icon.Matrix.Models.CoingeckoAggregatedUpdate", b =>
+                {
+                    b.Property<Guid>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("uniqueidentifier");
+
+                    b.Property<DateTimeOffset>("CreationTime")
+                        .HasColumnType("datetimeoffset");
+
+                    b.Property<float>("FdvUsd")
+                        .HasColumnType("real");
+
+                    b.Property<int>("H1Buys")
+                        .HasColumnType("int");
+
+                    b.Property<int>("H1Sells")
+                        .HasColumnType("int");
+
+                    b.Property<int>("H24Buys")
+                        .HasColumnType("int");
+
+                    b.Property<int>("H24Sells")
+                        .HasColumnType("int");
+
+                    b.Property<int>("M15Buys")
+                        .HasColumnType("int");
+
+                    b.Property<int>("M15Sells")
+                        .HasColumnType("int");
+
+                    b.Property<int>("M30Buys")
+                        .HasColumnType("int");
+
+                    b.Property<int>("M30Sells")
+                        .HasColumnType("int");
+
+                    b.Property<int>("M5Buys")
+                        .HasColumnType("int");
+
+                    b.Property<int>("M5Sells")
+                        .HasColumnType("int");
+
+                    b.Property<float>("MarketCapUsd")
+                        .HasColumnType("real");
+
+                    b.Property<int>("Pools")
+                        .HasColumnType("int");
+
+                    b.Property<float>("PriceChangeH1")
+                        .HasColumnType("real");
+
+                    b.Property<float>("PriceChangeH24")
+                        .HasColumnType("real");
+
+                    b.Property<float>("PriceChangeH6")
+                        .HasColumnType("real");
+
+                    b.Property<float>("PriceChangeM5")
+                        .HasColumnType("real");
+
+                    b.Property<float>("TotalLiquidityUsd")
+                        .HasColumnType("real");
+
+                    b.Property<float>("VolumeH1")
+                        .HasColumnType("real");
+
+                    b.Property<float>("VolumeH24")
+                        .HasColumnType("real");
+
+                    b.Property<float>("VolumeH6")
+                        .HasColumnType("real");
+
+                    b.Property<float>("VolumeM5")
+                        .HasColumnType("real");
+
+                    b.Property<float>("WeightedAvgPriceUsd")
+                        .HasColumnType("real");
+
+                    b.HasKey("Id");
+
+                    b.ToTable("CoingeckoAggregatedUpdates");
+                });
+
             modelBuilder.Entity("Icon.Matrix.Models.CoingeckoPoolUpdate", b =>
                 {
                     b.Property<Guid>("Id")
@@ -2526,14 +2612,17 @@ namespace Icon.Migrations
                     b.Property<string>("BaseTokenPriceUsd")
                         .HasColumnType("nvarchar(max)");
 
-                    b.Property<DateTime>("CreationTime")
-                        .HasColumnType("datetime2");
+                    b.Property<Guid?>("CoingeckoAggregatedUpdateId")
+                        .HasColumnType("uniqueidentifier");
+
+                    b.Property<DateTimeOffset>("CreationTime")
+                        .HasColumnType("datetimeoffset");
 
                     b.Property<string>("DexId")
                         .HasColumnType("nvarchar(max)");
 
-                    b.Property<string>("FdvUsd")
-                        .HasColumnType("nvarchar(max)");
+                    b.Property<float?>("FdvUsd")
+                        .HasColumnType("real");
 
                     b.Property<int?>("H1Buyers")
                         .HasColumnType("int");
@@ -2595,14 +2684,14 @@ namespace Icon.Migrations
                     b.Property<int?>("M5Sells")
                         .HasColumnType("int");
 
-                    b.Property<string>("MarketCapUsd")
-                        .HasColumnType("nvarchar(max)");
+                    b.Property<float?>("MarketCapUsd")
+                        .HasColumnType("real");
 
                     b.Property<string>("Name")
                         .HasColumnType("nvarchar(max)");
 
-                    b.Property<DateTime?>("PoolCreatedAt")
-                        .HasColumnType("datetime2");
+                    b.Property<DateTimeOffset?>("PoolCreatedAt")
+                        .HasColumnType("datetimeoffset");
 
                     b.Property<string>("PoolId")
                         .HasColumnType("nvarchar(max)");
@@ -2610,17 +2699,17 @@ namespace Icon.Migrations
                     b.Property<string>("PoolType")
                         .HasColumnType("nvarchar(max)");
 
-                    b.Property<string>("PriceChangeH1")
-                        .HasColumnType("nvarchar(max)");
+                    b.Property<float?>("PriceChangeH1")
+                        .HasColumnType("real");
 
-                    b.Property<string>("PriceChangeH24")
-                        .HasColumnType("nvarchar(max)");
+                    b.Property<float?>("PriceChangeH24")
+                        .HasColumnType("real");
 
-                    b.Property<string>("PriceChangeH6")
-                        .HasColumnType("nvarchar(max)");
+                    b.Property<float?>("PriceChangeH6")
+                        .HasColumnType("real");
 
-                    b.Property<string>("PriceChangeM5")
-                        .HasColumnType("nvarchar(max)");
+                    b.Property<float?>("PriceChangeM5")
+                        .HasColumnType("real");
 
                     b.Property<string>("QuoteTokenId")
                         .HasColumnType("nvarchar(max)");
@@ -2637,25 +2726,34 @@ namespace Icon.Migrations
                     b.Property<Guid?>("RaydiumPairId")
                         .HasColumnType("uniqueidentifier");
 
-                    b.Property<string>("ReserveInUsd")
-                        .HasColumnType("nvarchar(max)");
+                    b.Property<float?>("ReserveInUsd")
+                        .HasColumnType("real");
 
-                    b.Property<string>("TokenPriceUsd")
-                        .HasColumnType("nvarchar(max)");
+                    b.Property<float?>("TokenPriceUsd")
+                        .HasColumnType("real");
 
-                    b.Property<string>("VolumeH1")
-                        .HasColumnType("nvarchar(max)");
+                    b.Property<float?>("VolumeH1")
+                        .HasColumnType("real");
 
-                    b.Property<string>("VolumeH24")
-                        .HasColumnType("nvarchar(max)");
+                    b.Property<float?>("VolumeH24")
+                        .HasColumnType("real");
 
-                    b.Property<string>("VolumeH6")
-                        .HasColumnType("nvarchar(max)");
+                    b.Property<float?>("VolumeH6")
+                        .HasColumnType("real");
 
-                    b.Property<string>("VolumeM5")
-                        .HasColumnType("nvarchar(max)");
+                    b.Property<float?>("VolumeM5")
+                        .HasColumnType("real");
 
                     b.HasKey("Id");
+
+                    b.HasIndex("CreationTime")
+                        .HasDatabaseName("IX_CoingeckoPoolUpdate_CreationTime");
+
+                    b.HasIndex("RaydiumPairId")
+                        .HasDatabaseName("IX_CoingeckoPoolUpdate_RaydiumPairId");
+
+                    b.HasIndex("RaydiumPairId", "CreationTime")
+                        .HasDatabaseName("IX_CoingeckoPoolUpdate_RaydiumPair_CreationTime");
 
                     b.ToTable("CoingeckoPoolUpdates");
                 });
@@ -3159,11 +3257,59 @@ namespace Icon.Migrations
                     b.Property<long>("BlockTime")
                         .HasColumnType("bigint");
 
-                    b.Property<DateTime>("CreationTime")
-                        .HasColumnType("datetime2");
+                    b.Property<string>("BuySellRatioQualitativeAnalysis")
+                        .HasColumnType("nvarchar(max)");
 
-                    b.Property<DateTime?>("LastPoolUpdate")
-                        .HasColumnType("datetime2");
+                    b.Property<string>("BuySellRatioRecommendation")
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<float?>("BuySellRatioValue")
+                        .HasColumnType("real");
+
+                    b.Property<Guid?>("CoingeckoLastAggregatedUpdateId")
+                        .HasColumnType("uniqueidentifier");
+
+                    b.Property<float?>("CombinedMetricScore")
+                        .HasColumnType("real");
+
+                    b.Property<string>("CombinedQualitativeAnalysis")
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<string>("CombinedRecommendation")
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<DateTimeOffset>("CreationTime")
+                        .HasColumnType("datetimeoffset");
+
+                    b.Property<DateTimeOffset?>("DiscoveryStageLastUpdated")
+                        .HasColumnType("datetimeoffset");
+
+                    b.Property<string>("DiscoveryStageName")
+                        .HasColumnType("nvarchar(450)");
+
+                    b.Property<string>("EngagementCorrelationAnalysis")
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<float?>("EngagementCorrelationScore")
+                        .HasColumnType("real");
+
+                    b.Property<string>("PlantFinalPrediction")
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<string>("PlantFinalSummary")
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<bool>("PriceRefreshEnabled")
+                        .HasColumnType("bit");
+
+                    b.Property<int>("PriceRefreshIntervalSeconds")
+                        .HasColumnType("int");
+
+                    b.Property<DateTimeOffset?>("PriceRefreshLastUpdateTime")
+                        .HasColumnType("datetimeoffset");
+
+                    b.Property<DateTimeOffset?>("PriceRefreshNextUpdateTime")
+                        .HasColumnType("datetimeoffset");
 
                     b.Property<string>("QuoteTokenAccount")
                         .HasColumnType("nvarchar(max)");
@@ -3180,7 +3326,136 @@ namespace Icon.Migrations
                     b.Property<string>("SourceExchange")
                         .HasColumnType("nvarchar(max)");
 
+                    b.Property<float?>("TotalLiquidityUsd")
+                        .HasColumnType("real");
+
+                    b.Property<bool>("TweetSent")
+                        .HasColumnType("bit");
+
+                    b.Property<DateTimeOffset?>("TweetSentAt")
+                        .HasColumnType("datetimeoffset");
+
+                    b.Property<string>("TweetText")
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<int>("TweetsCAEngagementTotalLikes")
+                        .HasColumnType("int");
+
+                    b.Property<int>("TweetsCAEngagementTotalQuotes")
+                        .HasColumnType("int");
+
+                    b.Property<int>("TweetsCAEngagementTotalReplies")
+                        .HasColumnType("int");
+
+                    b.Property<int>("TweetsCAEngagementTotalRetweets")
+                        .HasColumnType("int");
+
+                    b.Property<int>("TweetsCAEngagementTotalViews")
+                        .HasColumnType("int");
+
+                    b.Property<int>("TweetsCAEngagementTweetsImported")
+                        .HasColumnType("int");
+
+                    b.Property<int>("TweetsCATweetCount")
+                        .HasColumnType("int");
+
+                    b.Property<int>("TweetsCATweetCount12H")
+                        .HasColumnType("int");
+
+                    b.Property<int>("TweetsCATweetCount1H")
+                        .HasColumnType("int");
+
+                    b.Property<int>("TweetsCATweetCount1WK")
+                        .HasColumnType("int");
+
+                    b.Property<int>("TweetsCATweetCount24H")
+                        .HasColumnType("int");
+
+                    b.Property<int>("TweetsCATweetCount3H")
+                        .HasColumnType("int");
+
+                    b.Property<int>("TweetsCATweetCount6H")
+                        .HasColumnType("int");
+
+                    b.Property<string>("TwitterCAFirstMentionHandle")
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<string>("TwitterCAFirstMentionText")
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<DateTimeOffset?>("TwitterCAFirstMentionTime")
+                        .HasColumnType("datetimeoffset");
+
+                    b.Property<string>("TwitterCAFirstMentionTweetId")
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<bool>("TwitterCAFound")
+                        .HasColumnType("bit");
+
+                    b.Property<DateTimeOffset?>("TwitterCAFoundAtTime")
+                        .HasColumnType("datetimeoffset");
+
+                    b.Property<int>("TwitterCAMostLikesOnSingleTweet")
+                        .HasColumnType("int");
+
+                    b.Property<int>("TwitterCAMostRepliesOnSingleTweet")
+                        .HasColumnType("int");
+
+                    b.Property<int>("TwitterCAQueryCount")
+                        .HasColumnType("int");
+
+                    b.Property<bool>("TwitterRefreshEnabled")
+                        .HasColumnType("bit");
+
+                    b.Property<DateTimeOffset?>("TwitterRefreshEnabledUntilTime")
+                        .HasColumnType("datetimeoffset");
+
+                    b.Property<int>("TwitterRefreshIntervalSeconds")
+                        .HasColumnType("int");
+
+                    b.Property<DateTimeOffset?>("TwitterRefreshLastUpdateTime")
+                        .HasColumnType("datetimeoffset");
+
+                    b.Property<DateTimeOffset?>("TwitterRefreshNextUpdateTime")
+                        .HasColumnType("datetimeoffset");
+
+                    b.Property<string>("VlrQualitativeAnalysis")
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<string>("VlrRecommendation")
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<float?>("VlrValue")
+                        .HasColumnType("real");
+
+                    b.Property<string>("VolumeToFdv1HQualitativeAnalysis")
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<string>("VolumeToFdv1HRecommendation")
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<float?>("VolumeToFdv1HValue")
+                        .HasColumnType("real");
+
                     b.HasKey("Id");
+
+                    b.HasIndex("CombinedMetricScore")
+                        .HasDatabaseName("IX_RaydiumPair_CombinedMetricScore");
+
+                    b.HasIndex("CreationTime")
+                        .HasDatabaseName("IX_RaydiumPair_CreationTime");
+
+                    b.HasIndex("DiscoveryStageName")
+                        .HasDatabaseName("IX_RaydiumPair_DiscoveryStageName");
+
+                    b.HasIndex("PriceRefreshEnabled")
+                        .HasDatabaseName("IX_RaydiumPair_PriceRefreshEnabled");
+
+                    b.HasIndex("PriceRefreshNextUpdateTime")
+                        .HasDatabaseName("IX_RaydiumPair_Token0");
+
+                    b.HasIndex("TweetSent")
+                        .HasDatabaseName("IX_RaydiumPair_TweetSent");
 
                     b.ToTable("RaydiumPairs");
                 });
@@ -3200,6 +3475,47 @@ namespace Icon.Migrations
                     b.HasKey("Id");
 
                     b.ToTable("Topics");
+                });
+
+            modelBuilder.Entity("Icon.Matrix.Models.TwitterAPIUsage", b =>
+                {
+                    b.Property<Guid>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("uniqueidentifier");
+
+                    b.Property<string>("Endpoint")
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<string>("ErrorMessage")
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<string>("Query")
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<int?>("RateLimitLimit")
+                        .HasColumnType("int");
+
+                    b.Property<int?>("RateLimitRemaining")
+                        .HasColumnType("int");
+
+                    b.Property<DateTimeOffset?>("RateLimitResetTime")
+                        .HasColumnType("datetimeoffset");
+
+                    b.Property<string>("RateLimitType")
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<DateTimeOffset>("RequestTime")
+                        .HasColumnType("datetimeoffset");
+
+                    b.Property<string>("ResponseBody")
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<int?>("StatusCode")
+                        .HasColumnType("int");
+
+                    b.HasKey("Id");
+
+                    b.ToTable("TwitterAPIUsages");
                 });
 
             modelBuilder.Entity("Icon.Matrix.Models.TwitterImportLog", b =>
@@ -3263,6 +3579,9 @@ namespace Icon.Migrations
 
                     b.Property<DateTime?>("LastRunStartTime")
                         .HasColumnType("datetime2");
+
+                    b.Property<string>("LastTweetImportId")
+                        .HasColumnType("nvarchar(max)");
 
                     b.Property<DateTime?>("NextRunTime")
                         .HasColumnType("datetime2");
@@ -3419,6 +3738,99 @@ namespace Icon.Migrations
                     b.HasKey("Id");
 
                     b.ToTable("TwitterImportTweets");
+                });
+
+            modelBuilder.Entity("Icon.Matrix.Models.TwitterImportTweetCount", b =>
+                {
+                    b.Property<Guid>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("uniqueidentifier");
+
+                    b.Property<DateTimeOffset>("CreationTime")
+                        .HasColumnType("datetimeoffset");
+
+                    b.Property<DateTimeOffset>("EndTime")
+                        .HasColumnType("datetimeoffset");
+
+                    b.Property<Guid?>("RaydiumPairId")
+                        .HasColumnType("uniqueidentifier");
+
+                    b.Property<string>("SearchQuery")
+                        .HasColumnType("nvarchar(450)");
+
+                    b.Property<DateTimeOffset>("StartTime")
+                        .HasColumnType("datetimeoffset");
+
+                    b.Property<int>("TweetCount")
+                        .HasColumnType("int");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("CreationTime")
+                        .HasDatabaseName("IX_TwitterImportTweetCount_CreationTime");
+
+                    b.HasIndex("RaydiumPairId")
+                        .HasDatabaseName("IX_TwitterImportTweetCount_RaydiumPairId");
+
+                    b.HasIndex("StartTime", "EndTime", "RaydiumPairId", "SearchQuery")
+                        .HasDatabaseName("IX_TwitterImportTweetCount_StartEndTimePairQuery");
+
+                    b.ToTable("TwitterImportTweetCounts");
+                });
+
+            modelBuilder.Entity("Icon.Matrix.Models.TwitterImportTweetEngagement", b =>
+                {
+                    b.Property<Guid>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("uniqueidentifier");
+
+                    b.Property<string>("AuthorId")
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<DateTimeOffset>("CreatedAt")
+                        .HasColumnType("datetimeoffset");
+
+                    b.Property<int>("ImpressionCount")
+                        .HasColumnType("int");
+
+                    b.Property<DateTimeOffset>("LastUpdatedAt")
+                        .HasColumnType("datetimeoffset");
+
+                    b.Property<int>("LikeCount")
+                        .HasColumnType("int");
+
+                    b.Property<int>("QuoteCount")
+                        .HasColumnType("int");
+
+                    b.Property<Guid>("RaydiumPairId")
+                        .HasColumnType("uniqueidentifier");
+
+                    b.Property<int>("ReplyCount")
+                        .HasColumnType("int");
+
+                    b.Property<int>("RetweetCount")
+                        .HasColumnType("int");
+
+                    b.Property<string>("Text")
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<string>("TweetId")
+                        .HasColumnType("nvarchar(450)");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("CreatedAt")
+                        .HasDatabaseName("IX_TwitterImportTweetEngagement_CreatedAt");
+
+                    b.HasIndex("RaydiumPairId")
+                        .HasDatabaseName("IX_TwitterImportTweetEngagement_RaydiumPairId");
+
+                    b.HasIndex("RaydiumPairId", "TweetId")
+                        .IsUnique()
+                        .HasDatabaseName("UX_TwitterImportTweetEngagement_RaydiumPair_TweetId")
+                        .HasFilter("[TweetId] IS NOT NULL");
+
+                    b.ToTable("TwitterImportTweetEngagements");
                 });
 
             modelBuilder.Entity("Icon.MultiTenancy.Accounting.Invoice", b =>

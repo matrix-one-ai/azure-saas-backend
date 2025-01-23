@@ -2,6 +2,7 @@ using Abp.Domain.Repositories;
 using Abp.Domain.Uow;
 using Icon.Configuration;
 using Icon.Matrix.Models;
+using Icon.Matrix.TokenDiscovery;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.Hosting;
 using Microsoft.Extensions.Logging;
@@ -213,7 +214,7 @@ namespace Icon.Matrix.Raydium
                             var entity = RaydiumModelConverter.ToRaydiumPairEntity(notification);
                             await _raydiumPairRepository.InsertAsync(entity);
                             await _unitOfWorkManager.Current.SaveChangesAsync();
-                            uow.Complete();
+                            await uow.CompleteAsync();
                         }
                     }
                 }
@@ -235,7 +236,8 @@ namespace Icon.Matrix.Raydium
             var entity = new RaydiumPair
             {
                 Id = Guid.NewGuid(),
-                CreationTime = DateTime.UtcNow,
+                CreationTime = DateTimeOffset.UtcNow,
+                DiscoveryStageName = TokenStageDefinitions.Stages.Inception,
 
                 Slot = notification.Slot,
                 Signature = notification.Signature,
@@ -252,7 +254,10 @@ namespace Icon.Matrix.Raydium
                 BaseTokenLiquidityAdded = notification.Pair?.BaseTokenLiquidityAdded,
 
                 QuoteTokenAccount = notification.Pair?.QuoteToken?.Account,
-                QuoteTokenLiquidityAdded = notification.Pair?.QuoteTokenLiquidityAdded
+                QuoteTokenLiquidityAdded = notification.Pair?.QuoteTokenLiquidityAdded,
+                PriceRefreshEnabled = true,
+                PriceRefreshIntervalSeconds = 10,
+                PriceRefreshNextUpdateTime = DateTimeOffset.UtcNow.AddSeconds(10)
             };
 
             return entity;

@@ -13,6 +13,7 @@ namespace Icon.Matrix.Portal.Dto
         public string Name { get; set; } = "Plant";
         public string Handle { get; set; } = "@plantdotfun";
         public string AvatarUrl { get; set; } = "https://pbs.twimg.com/profile_images/1874483608099971072/41AndH6s.jpg";
+        public string TweetText { get; set; }
         public DateTimeOffset TweetDate { get; set; }
         public string TweetUrl { get; set; }
         public int BookmarkCount { get; set; }

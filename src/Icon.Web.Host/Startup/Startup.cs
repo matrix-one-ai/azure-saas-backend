@@ -151,6 +151,7 @@ namespace Icon.Web.Startup
 
             services.AddScoped(typeof(ISharedSqlRepository<>), typeof(SharedSqlRepository<>));
             services.AddTransient(typeof(ITwitterCommunicationService), typeof(TwitterCommunicationService));
+            services.AddScoped(typeof(IMatrixBulkRepository<>), typeof(MatrixBulkRepository<>));
 
             if (_hostingEnvironment.IsProduction())
             {

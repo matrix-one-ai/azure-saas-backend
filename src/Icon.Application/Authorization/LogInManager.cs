@@ -18,31 +18,31 @@ namespace Icon.Authorization
     public class LogInManager : AbpLogInManager<Tenant, Role, User>
     {
         public LogInManager(
-            UserManager userManager, 
-            IMultiTenancyConfig multiTenancyConfig, 
-            IRepository<Tenant> tenantRepository, 
-            IUnitOfWorkManager unitOfWorkManager, 
-            ISettingManager settingManager, 
-            IRepository<UserLoginAttempt, long> userLoginAttemptRepository, 
-            IUserManagementConfig userManagementConfig, 
-            IIocResolver iocResolver, 
+            UserManager userManager,
+            IMultiTenancyConfig multiTenancyConfig,
+            IRepository<Tenant> tenantRepository,
+            IUnitOfWorkManager unitOfWorkManager,
+            ISettingManager settingManager,
+            IRepository<UserLoginAttempt, long> userLoginAttemptRepository,
+            IUserManagementConfig userManagementConfig,
+            IIocResolver iocResolver,
             RoleManager roleManager,
             IPasswordHasher<User> passwordHasher,
             UserClaimsPrincipalFactory claimsPrincipalFactory)
             : base(
-                  userManager, 
-                  multiTenancyConfig, 
-                  tenantRepository, 
-                  unitOfWorkManager, 
-                  settingManager, 
-                  userLoginAttemptRepository, 
-                  userManagementConfig, 
-                  iocResolver, 
+                  userManager,
+                  multiTenancyConfig,
+                  tenantRepository,
+                  unitOfWorkManager,
+                  settingManager,
+                  userLoginAttemptRepository,
+                  userManagementConfig,
+                  iocResolver,
                   passwordHasher,
                   roleManager,
                   claimsPrincipalFactory)
         {
-            
+
         }
 
         /// <summary>
@@ -52,6 +52,7 @@ namespace Icon.Authorization
         /// <param name="tenant">Tenant of the given user</param>
         /// <returns></returns>
         public Task<AbpLoginResult<Tenant, User>> CreateLoginResultAsync(User user, Tenant tenant = null)
+
         {
             return base.CreateLoginResultAsync(user, tenant);
         }

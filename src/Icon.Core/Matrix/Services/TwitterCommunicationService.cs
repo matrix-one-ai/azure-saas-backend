@@ -14,6 +14,7 @@ namespace Icon.Matrix.Twitter
 {
     public interface ITwitterCommunicationService
     {
+        Task<List<TwitterApiGetTweetResponse>> GetMentionsFromTweetIdAsync(string twitterAgentId, string sinceId, int limit);
         Task<TwitterApiPostTweetResponse> PostTweetAsync(string twitterAgentId, string text);
         Task<TwitterApiPostTweetResponse> PostTweetWithImageAsync(string twitterAgentId, string imageBase64, string text = null);
         Task<TwitterApiPostTweetResponse> ReplyToTweetAsync(string twitterAgentId, string tweetId, string text);
@@ -74,6 +75,24 @@ namespace Icon.Matrix.Twitter
                 _httpClient.MaxResponseContentBufferSize = 1024 * 1024 * 100;
             }
         }
+
+        public async Task<List<TwitterApiGetTweetResponse>> GetMentionsFromTweetIdAsync(
+            string twitterAgentId,
+            string sinceId,
+            int limit
+        )
+        {
+            return await ExecuteRequestAsync<List<TwitterApiGetTweetResponse>>(
+                () => _httpClient.PostAsJsonAsync("/getMentionsFromId", new
+                {
+                    agentId = twitterAgentId,
+                    sinceId,
+                    limit
+                }),
+                $"GetUserMentionsFromTweetIdAsync for agentId: {twitterAgentId}, sinceTweetId: {sinceId}"
+            );
+        }
+
 
         public Task<TwitterApiPostTweetResponse> PostTweetAsync(string twitterAgentId, string text)
         {

@@ -57,8 +57,11 @@ namespace Icon.EntityFrameworkCore
         public virtual DbSet<Agent> Agents { get; set; }
 
         public virtual DbSet<TwitterImportTweet> TwitterImportTweets { get; set; }
+        public virtual DbSet<TwitterImportTweetEngagement> TwitterImportTweetEngagements { get; set; }
         public virtual DbSet<TwitterImportTask> TwitterImportTasks { get; set; }
         public virtual DbSet<TwitterImportLog> TwitterImportLogs { get; set; }
+        public virtual DbSet<TwitterAPIUsage> TwitterAPIUsages { get; set; }
+        public virtual DbSet<TwitterImportTweetCount> TwitterImportTweetCounts { get; set; }
 
 
         /* Define an IDbSet for each entity of the application */
@@ -90,7 +93,9 @@ namespace Icon.EntityFrameworkCore
         public virtual DbSet<RecentPassword> RecentPasswords { get; set; }
         public virtual DbSet<RaydiumPair> RaydiumPairs { get; set; }
 
+
         public virtual DbSet<CoingeckoPoolUpdate> CoingeckoPoolUpdates { get; set; }
+        public virtual DbSet<CoingeckoAggregatedUpdate> CoingeckoAggregatedUpdates { get; set; }
 
 
         public IconDbContext(DbContextOptions<IconDbContext> options)
@@ -167,11 +172,64 @@ namespace Icon.EntityFrameworkCore
                 .HasIndex(m => m.PlatformInteractionParentId)
                 .HasDatabaseName("IX_MemoryParent_PlatformInteractionParentId");
 
-            // modelBuilder.Entity<CharacterBio>()
-            //     .HasOne(cb => cb.Character)
-            //     .WithMany()
-            //     .HasForeignKey(cb => cb.CharacterId)
-            //     .OnDelete(DeleteBehavior.Restrict);
+            modelBuilder.Entity<RaydiumPair>()
+                .HasIndex(m => m.CreationTime)
+                .HasDatabaseName("IX_RaydiumPair_CreationTime");
+            modelBuilder.Entity<RaydiumPair>()
+                .HasIndex(m => m.PriceRefreshEnabled)
+                .HasDatabaseName("IX_RaydiumPair_PriceRefreshEnabled");
+            modelBuilder.Entity<RaydiumPair>()
+                .HasIndex(m => m.TweetSent)
+                .HasDatabaseName("IX_RaydiumPair_TweetSent");
+            modelBuilder.Entity<RaydiumPair>()
+                .HasIndex(m => m.PriceRefreshNextUpdateTime)
+                .HasDatabaseName("IX_RaydiumPair_Token0");
+            modelBuilder.Entity<RaydiumPair>()
+                .HasIndex(m => m.CombinedMetricScore)
+                .HasDatabaseName("IX_RaydiumPair_CombinedMetricScore");
+            modelBuilder.Entity<RaydiumPair>()
+                .HasIndex(m => m.DiscoveryStageName)
+                .HasDatabaseName("IX_RaydiumPair_DiscoveryStageName");
+
+
+            modelBuilder.Entity<CoingeckoPoolUpdate>()
+                .HasIndex(m => m.CreationTime)
+                .HasDatabaseName("IX_CoingeckoPoolUpdate_CreationTime");
+            modelBuilder.Entity<CoingeckoPoolUpdate>()
+                .HasIndex(m => m.RaydiumPairId)
+                .HasDatabaseName("IX_CoingeckoPoolUpdate_RaydiumPairId");
+            modelBuilder.Entity<CoingeckoPoolUpdate>()
+                   .HasIndex(m => new { m.RaydiumPairId, m.CreationTime })
+                   .HasDatabaseName("IX_CoingeckoPoolUpdate_RaydiumPair_CreationTime");
+
+            modelBuilder.Entity<TwitterImportTweet>()
+                .HasIndex(e => e.TweetId)
+                .HasDatabaseName("IX_TwitterImportTweet_TweetId");
+            modelBuilder.Entity<TwitterImportTweet>()
+                .HasIndex(e => e.CharacterId)
+                .HasDatabaseName("IX_TwitterImportTweet_CharacterId");
+
+
+            modelBuilder.Entity<TwitterImportTweetEngagement>()
+                .HasIndex(e => e.RaydiumPairId)
+                .HasDatabaseName("IX_TwitterImportTweetEngagement_RaydiumPairId");
+            modelBuilder.Entity<TwitterImportTweetEngagement>()
+                .HasIndex(e => new { e.RaydiumPairId, e.TweetId })
+                .IsUnique()
+                .HasDatabaseName("UX_TwitterImportTweetEngagement_RaydiumPair_TweetId");
+            modelBuilder.Entity<TwitterImportTweetEngagement>()
+                .HasIndex(e => e.CreatedAt)
+                .HasDatabaseName("IX_TwitterImportTweetEngagement_CreatedAt");
+
+            modelBuilder.Entity<TwitterImportTweetCount>()
+                .HasIndex(c => c.RaydiumPairId)
+                .HasDatabaseName("IX_TwitterImportTweetCount_RaydiumPairId");
+            modelBuilder.Entity<TwitterImportTweetCount>()
+                .HasIndex(c => new { c.StartTime, c.EndTime, c.RaydiumPairId, c.SearchQuery })
+                .HasDatabaseName("IX_TwitterImportTweetCount_StartEndTimePairQuery");
+            modelBuilder.Entity<TwitterImportTweetCount>()
+                .HasIndex(c => c.CreationTime)
+                .HasDatabaseName("IX_TwitterImportTweetCount_CreationTime");
 
 
             modelBuilder.Entity<BinaryObject>(b => { b.HasIndex(e => new { e.TenantId }); });
