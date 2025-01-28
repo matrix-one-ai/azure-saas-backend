@@ -384,6 +384,7 @@ namespace Icon.Matrix.TokenDiscovery
             // 3) Aggregate them into a single CoingeckoAggregatedUpdate
             var aggregated = BuildAggregatedUpdate(poolUpdates);
             aggregated.Id = priceGroupId;
+            aggregated.RaydiumPairId = pair.Id;
             aggregated.CreationTime = priceGroupTime;
 
             // 4) Save the aggregated update in DB
@@ -495,14 +496,28 @@ namespace Icon.Matrix.TokenDiscovery
                 // 5) Transactions
                 agg.M5Buys += (u.M5Buys ?? 0);
                 agg.M5Sells += (u.M5Sells ?? 0);
+                agg.M5Buyers += (u.M5Buyers ?? 0);
+                agg.M5Sellers += (u.M5Sellers ?? 0);
+
                 agg.M15Buys += (u.M15Buys ?? 0);
                 agg.M15Sells += (u.M15Sells ?? 0);
+                agg.M15Buyers += (u.M15Buyers ?? 0);
+                agg.M15Sellers += (u.M15Sellers ?? 0);
+
                 agg.M30Buys += (u.M30Buys ?? 0);
                 agg.M30Sells += (u.M30Sells ?? 0);
+                agg.M30Buyers += (u.M30Buyers ?? 0);
+                agg.M30Sellers += (u.M30Sellers ?? 0);
+
                 agg.H1Buys += (u.H1Buys ?? 0);
                 agg.H1Sells += (u.H1Sells ?? 0);
+                agg.H1Buyers += (u.H1Buyers ?? 0);
+                agg.H1Sellers += (u.H1Sellers ?? 0);
+
                 agg.H24Buys += (u.H24Buys ?? 0);
                 agg.H24Sells += (u.H24Sells ?? 0);
+                agg.H24Buyers += (u.H24Buyers ?? 0);
+                agg.H24Sellers += (u.H24Sellers ?? 0);
 
                 // 6) Weighted average price (we'll use H1 volume for weighting)
                 if (u.BaseTokenPriceUsd != null && u.VolumeH1.HasValue)
@@ -645,6 +660,43 @@ namespace Icon.Matrix.TokenDiscovery
             }
 
             float finalScore = (vlrScore + bsScore + volFdvScore) / 3.0f;
+
+
+            if (agg.PriceChangeM5 > 0)
+            {
+                finalScore *= 1.4f;
+            }
+            if (agg.PriceChangeH1 > 0 && pair.CreationTime.AddHours(1) < DateTimeOffset.UtcNow)
+            {
+                finalScore *= 1.3f;
+            }
+            if (agg.PriceChangeH6 > 0 && pair.CreationTime.AddHours(6) < DateTimeOffset.UtcNow)
+            {
+                finalScore *= 1.2f;
+            }
+            if (agg.PriceChangeH24 > 0 && pair.CreationTime.AddHours(24) < DateTimeOffset.UtcNow)
+            {
+                finalScore *= 1.1f;
+            }
+
+            if (agg.PriceChangeM5 < 0)
+            {
+                finalScore *= 0.2f;
+            }
+            if (agg.PriceChangeH1 < 0 && pair.CreationTime.AddHours(1) < DateTimeOffset.UtcNow)
+            {
+                finalScore *= 0.3f;
+            }
+            if (agg.PriceChangeH6 < 0 && pair.CreationTime.AddHours(6) < DateTimeOffset.UtcNow)
+            {
+                finalScore *= 0.4f;
+            }
+            if (agg.PriceChangeH24 < 0 && pair.CreationTime.AddHours(24) < DateTimeOffset.UtcNow)
+            {
+                finalScore *= 0.5f;
+            }
+
+
             pair.CombinedMetricScore = finalScore;
 
             var finalQa = "Overall Balanced";
@@ -768,10 +820,10 @@ namespace Icon.Matrix.TokenDiscovery
                 // Basic rollups
                 var tweets1H = tweetCounts.TakeLast(1)?.FirstOrDefault()?.TweetCount ?? 0;
                 var tweets3H = (tweetCounts.TakeLast(3)?.Sum(x => x.TweetCount) ?? 0) - tweets1H;
-                var tweets6H = (tweetCounts.TakeLast(6)?.Sum(x => x.TweetCount) ?? 0) - tweets3H;
-                var tweets12H = (tweetCounts.TakeLast(12)?.Sum(x => x.TweetCount) ?? 0) - tweets6H;
-                var tweets24H = (tweetCounts.TakeLast(24)?.Sum(x => x.TweetCount) ?? 0) - tweets12H;
-                var tweets1WK = tweetCounts.Sum(x => x.TweetCount) - tweets24H;
+                var tweets6H = (tweetCounts.TakeLast(6)?.Sum(x => x.TweetCount) ?? 0) - (tweets3H + tweets1H); ;
+                var tweets12H = (tweetCounts.TakeLast(12)?.Sum(x => x.TweetCount) ?? 0) - (tweets6H + tweets3H + tweets1H);
+                var tweets24H = (tweetCounts.TakeLast(24)?.Sum(x => x.TweetCount) ?? 0) - (tweets12H + tweets6H + tweets3H + tweets1H);
+                var tweets1WK = tweetCounts.Sum(x => x.TweetCount) - (tweets24H + tweets12H + tweets6H + tweets3H + tweets1H);
 
                 pair.TweetsCATweetCount1H = tweets1H;
                 pair.TweetsCATweetCount3H = tweets3H;
@@ -876,6 +928,7 @@ namespace Icon.Matrix.TokenDiscovery
                 .GroupBy(x => x.RaydiumPairId)
                 .Select(g => new
                 {
+                    UniqueAuthors = g.Select(x => x.AuthorId).Distinct().Count(),
                     TweetsImported = g.Count(),
                     SumLikes = g.Sum(x => x.LikeCount),
                     SumReplies = g.Sum(x => x.ReplyCount),
@@ -886,6 +939,7 @@ namespace Icon.Matrix.TokenDiscovery
 
             if (aggregated != null)
             {
+                pair.TweetsCAEngagementUniqueAuthors = aggregated.UniqueAuthors;
                 pair.TweetsCAEngagementTweetsImported = aggregated.TweetsImported;
                 pair.TweetsCAEngagementTotalLikes = aggregated.SumLikes;
                 pair.TweetsCAEngagementTotalReplies = aggregated.SumReplies;

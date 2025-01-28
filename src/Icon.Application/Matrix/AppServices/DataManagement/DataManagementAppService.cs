@@ -84,7 +84,6 @@ namespace Icon.Matrix
             await _tokenDiscoveryManager.FullDiscovery();
         }
 
-
         public async Task<List<RaydiumPair>> GetLatestRaydiumTweets()
         {
             return await _tokenPoolManager.GetLatestRaydiumpairs();
@@ -313,6 +312,321 @@ ORDER BY CharacterId, Rank;
 
             await _cpTwitterRankSqlRepository.ExecuteSqlRawAsync(sql);
         }
+
+        [HttpPost]
+        public async Task ProcessInfluencerScoring()
+        {
+            var sql = @"
+TRUNCATE TABLE dbo.InfluencerTokenMentions
+TRUNCATE TABLE dbo.InfluencerTokenScores
+
+;WITH FirstTweetPerAuthorPair AS
+(
+    SELECT
+        t.Id,
+        t.AuthorId,
+        t.RaydiumPairId,
+        t.CreatedAt,
+        ROW_NUMBER() OVER (
+            PARTITION BY t.AuthorId, t.RaydiumPairId
+            ORDER BY t.CreatedAt ASC
+        ) AS RN
+    FROM dbo.TwitterImportTweetEngagements t
+),
+TweetPriceWindows AS
+(
+    SELECT
+        ft.Id AS TweetId,
+        ft.AuthorId AS Influencer,
+        ft.RaydiumPairId,
+        ft.CreatedAt AS TweetTime,
+
+        -- Pre-price (price just before the tweet)
+        COALESCE(preAgg.WeightedAvgPriceUsd, 0) AS PrePrice,
+        COALESCE(preAggBackup.WeightedAvgPriceUsd, 0) AS PrePriceBackup,
+
+        -- Snapshots at specific future times
+        COALESCE(p5.WeightedAvgPriceUsd, 0)     AS Price5m,
+        COALESCE(p15.WeightedAvgPriceUsd, 0)    AS Price15m,
+        COALESCE(p30.WeightedAvgPriceUsd, 0)    AS Price30m,
+        COALESCE(p60.WeightedAvgPriceUsd, 0)    AS Price1h,
+        COALESCE(p120.WeightedAvgPriceUsd, 0)   AS Price2h
+    FROM FirstTweetPerAuthorPair ft
+    INNER JOIN dbo.TwitterImportTweetEngagements t 
+        ON t.Id = ft.Id
+    
+    OUTER APPLY
+    (
+        SELECT TOP 1 c.*
+        FROM dbo.CoingeckoAggregatedUpdates c
+        WHERE c.RaydiumPairId = ft.RaydiumPairId
+          AND c.CreationTime <= ft.CreatedAt
+        ORDER BY c.CreationTime DESC
+    ) preAgg
+    
+    -- Fallback preprice: earliest price AFTER tweet time, up to 10 minutes
+    OUTER APPLY
+    (
+        SELECT TOP 1 c.*
+        FROM dbo.CoingeckoAggregatedUpdates c
+        WHERE c.RaydiumPairId = ft.RaydiumPairId
+          AND c.CreationTime >= ft.CreatedAt
+          AND c.CreationTime <= DATEADD(MINUTE, 10, ft.CreatedAt)
+        ORDER BY c.CreationTime ASC
+    ) preAggBackup
+
+    OUTER APPLY
+    (
+        SELECT TOP 1 c.*
+        FROM dbo.CoingeckoAggregatedUpdates c
+        WHERE c.RaydiumPairId = ft.RaydiumPairId
+          AND c.CreationTime >= DATEADD(MINUTE, 5, ft.CreatedAt)
+        ORDER BY c.CreationTime ASC
+    ) p5
+    
+    OUTER APPLY
+    (
+        SELECT TOP 1 c.*
+        FROM dbo.CoingeckoAggregatedUpdates c
+        WHERE c.RaydiumPairId = ft.RaydiumPairId
+          AND c.CreationTime >= DATEADD(MINUTE, 15, ft.CreatedAt)
+        ORDER BY c.CreationTime ASC
+    ) p15
+    
+    OUTER APPLY
+    (
+        SELECT TOP 1 c.*
+        FROM dbo.CoingeckoAggregatedUpdates c
+        WHERE c.RaydiumPairId = ft.RaydiumPairId
+          AND c.CreationTime >= DATEADD(MINUTE, 30, ft.CreatedAt)
+        ORDER BY c.CreationTime ASC
+    ) p30
+    
+    OUTER APPLY
+    (
+        SELECT TOP 1 c.*
+        FROM dbo.CoingeckoAggregatedUpdates c
+        WHERE c.RaydiumPairId = ft.RaydiumPairId
+          AND c.CreationTime >= DATEADD(MINUTE, 60, ft.CreatedAt)
+        ORDER BY c.CreationTime ASC
+    ) p60
+    
+    OUTER APPLY
+    (
+        SELECT TOP 1 c.*
+        FROM dbo.CoingeckoAggregatedUpdates c
+        WHERE c.RaydiumPairId = ft.RaydiumPairId
+          AND c.CreationTime >= DATEADD(MINUTE, 120, ft.CreatedAt)
+        ORDER BY c.CreationTime ASC
+    ) p120
+
+    WHERE ft.RN = 1
+),
+PumpCalculations AS
+(
+    SELECT
+        tw.TweetId,
+        tw.Influencer,
+        tw.RaydiumPairId,
+        tw.TweetTime,
+        tw.PrePrice,
+        tw.PrePriceBackup,
+        
+        tw.Price5m,
+        tw.Price15m,
+        tw.Price30m,
+        tw.Price1h,
+        tw.Price2h,
+
+        -- Pump calculations that first attempt to use PrePrice; if 0 (or NULL), fallback to PrePriceBackup.
+        CASE 
+            WHEN tw.PrePrice IS NOT NULL 
+                 AND tw.PrePrice <> 0
+            THEN (tw.Price5m - tw.PrePrice) / tw.PrePrice * 100
+            WHEN tw.PrePriceBackup IS NOT NULL
+                 AND tw.PrePriceBackup <> 0
+            THEN (tw.Price5m - tw.PrePriceBackup) / tw.PrePriceBackup * 100
+            ELSE NULL
+        END AS Pump5m,
+
+        CASE 
+            WHEN tw.PrePrice IS NOT NULL 
+                 AND tw.PrePrice <> 0
+            THEN (tw.Price15m - tw.PrePrice) / tw.PrePrice * 100
+            WHEN tw.PrePriceBackup IS NOT NULL
+                 AND tw.PrePriceBackup <> 0
+            THEN (tw.Price15m - tw.PrePriceBackup) / tw.PrePriceBackup * 100
+            ELSE NULL
+        END AS Pump15m,
+
+        CASE 
+            WHEN tw.PrePrice IS NOT NULL 
+                 AND tw.PrePrice <> 0
+            THEN (tw.Price30m - tw.PrePrice) / tw.PrePrice * 100
+            WHEN tw.PrePriceBackup IS NOT NULL
+                 AND tw.PrePriceBackup <> 0
+            THEN (tw.Price30m - tw.PrePriceBackup) / tw.PrePriceBackup * 100
+            ELSE NULL
+        END AS Pump30m,
+
+        CASE 
+            WHEN tw.PrePrice IS NOT NULL 
+                 AND tw.PrePrice <> 0
+            THEN (tw.Price1h - tw.PrePrice) / tw.PrePrice * 100
+            WHEN tw.PrePriceBackup IS NOT NULL
+                 AND tw.PrePriceBackup <> 0
+            THEN (tw.Price1h - tw.PrePriceBackup) / tw.PrePriceBackup * 100
+            ELSE NULL
+        END AS Pump1h,
+
+        CASE 
+            WHEN tw.PrePrice IS NOT NULL 
+                 AND tw.PrePrice <> 0
+            THEN (tw.Price2h - tw.PrePrice) / tw.PrePrice * 100
+            WHEN tw.PrePriceBackup IS NOT NULL
+                 AND tw.PrePriceBackup <> 0
+            THEN (tw.Price2h - tw.PrePriceBackup) / tw.PrePriceBackup * 100
+            ELSE NULL
+        END AS Pump2h
+    FROM TweetPriceWindows tw
+)
+INSERT INTO dbo.InfluencerTokenMentions
+(
+    Id,
+    Influencer,
+    RaydiumPairId,
+    TweetCount,
+    AvgPump5m,
+    AvgPump15m,
+    AvgPump30m,
+    AvgPump1h,
+    AvgPump2h,
+    SuccessRate5m,
+    SuccessRate15m,
+    SuccessRate30m,
+    SuccessRate1h,
+    SuccessRate2h,
+    DeathCount,
+    AliveCount
+)
+SELECT
+    NEWID()                                  AS Id,
+    pc.Influencer,
+    pc.RaydiumPairId,
+
+    COUNT(*)                                 AS TweetCount,
+
+    AVG(pc.Pump5m)                           AS AvgPump5m,
+    AVG(pc.Pump15m)                          AS AvgPump15m,
+    AVG(pc.Pump30m)                          AS AvgPump30m,
+    AVG(pc.Pump1h)                           AS AvgPump1h,
+    AVG(pc.Pump2h)                           AS AvgPump2h,
+
+    -- success rates: fraction of tweets with pump > 0
+    AVG(CASE WHEN pc.Pump5m  > 0 THEN 1.0 ELSE 0.0 END) AS SuccessRate5m,
+    AVG(CASE WHEN pc.Pump15m > 0 THEN 1.0 ELSE 0.0 END) AS SuccessRate15m,
+    AVG(CASE WHEN pc.Pump30m > 0 THEN 1.0 ELSE 0.0 END) AS SuccessRate30m,
+    AVG(CASE WHEN pc.Pump1h  > 0 THEN 1.0 ELSE 0.0 END) AS SuccessRate1h,
+    AVG(CASE WHEN pc.Pump2h  > 0 THEN 1.0 ELSE 0.0 END) AS SuccessRate2h,
+
+    -- Each token is either death or alive. So for the entire group
+    -- it is the same for all tweets of that token. We'll just check RaydiumPairs once:
+    SUM(CASE WHEN rp.DiscoveryStageName = 'Death' THEN 1 ELSE 0 END) AS DeathCount,
+    SUM(CASE WHEN rp.DiscoveryStageName = 'Death' THEN 0 ELSE 1 END) AS AliveCount
+
+FROM PumpCalculations pc
+JOIN dbo.RaydiumPairs rp 
+   ON rp.Id = pc.RaydiumPairId
+GROUP BY pc.Influencer, pc.RaydiumPairId, rp.DiscoveryStageName
+;
+
+
+INSERT INTO dbo.InfluencerTokenScores
+(
+    Id,
+    Influencer,
+    TweetCount,
+    UniqueTokensCount,
+    AvgPump5m,
+    AvgPump15m,
+    AvgPump30m,
+    AvgPump1h,
+    AvgPump2h,
+    SuccessRate5m,
+    SuccessRate15m,
+    SuccessRate30m,
+    SuccessRate1h,
+    SuccessRate2h,
+    DeathCount,
+    AliveCount,
+    TotalScore,
+    TimedWindowScore
+)
+SELECT 
+    NEWID() AS Id,
+    itm.Influencer,
+
+    -- Summation of tweet counts across all tokens:
+    SUM(itm.TweetCount) AS TweetCount,
+
+    -- Number of distinct tokens for that influencer:
+    COUNT(DISTINCT itm.RaydiumPairId) AS UniqueTokensCount,
+
+    -- Example of simple average of the token-level averages:
+    -- (Could also do a weighted average by the token's TweetCount if desired.)
+    AVG(itm.AvgPump5m)  AS AvgPump5m,
+    AVG(itm.AvgPump15m) AS AvgPump15m,
+    AVG(itm.AvgPump30m) AS AvgPump30m,
+    AVG(itm.AvgPump1h)  AS AvgPump1h,
+    AVG(itm.AvgPump2h)  AS AvgPump2h,
+
+    -- success rates: average of token-level success rates
+    AVG(itm.SuccessRate5m)  AS SuccessRate5m,
+    AVG(itm.SuccessRate15m) AS SuccessRate15m,
+    AVG(itm.SuccessRate30m) AS SuccessRate30m,
+    AVG(itm.SuccessRate1h)  AS SuccessRate1h,
+    AVG(itm.SuccessRate2h)  AS SuccessRate2h,
+
+    -- death/alive across all tokens
+    SUM(itm.DeathCount) AS DeathCount,
+    SUM(itm.AliveCount) AS AliveCount,
+
+    ----------------------------------------------------------------------------
+    -- Example scoring logic (mimicking original):
+    ----------------------------------------------------------------------------
+    CASE 
+        WHEN COUNT(DISTINCT itm.RaydiumPairId) < 5 THEN 0
+        ELSE 
+         COUNT(DISTINCT itm.RaydiumPairId) * 
+         (
+           (
+		        AVG(itm.SuccessRate5m)  +
+		        AVG(itm.SuccessRate15m) +
+		        AVG(itm.SuccessRate30m) +
+                AVG(itm.SuccessRate1h)  +
+                AVG(itm.SuccessRate2h)
+           ) / 5.0
+         )
+    END AS TotalScore,
+
+    (
+        -- Weighted timed window idea
+        AVG(itm.SuccessRate5m)  * 30 +
+        AVG(itm.SuccessRate15m) * 60 +
+        AVG(itm.SuccessRate30m) * 90   +
+        AVG(itm.SuccessRate1h)  * 60   +
+        AVG(itm.SuccessRate2h)  * 30
+    ) AS TimedWindowScore
+
+FROM dbo.InfluencerTokenMentions itm
+GROUP BY itm.Influencer
+HAVING COUNT(DISTINCT itm.RaydiumPairId) >= 5
+ORDER BY TimedWindowScore DESC;
+            ";
+
+            await _cpTwitterRankSqlRepository.ExecuteSqlRawAsync(sql);
+        }
+
 
         // public async Task SyncAzureCharacterTweets(int batchSize = 100)
         // {

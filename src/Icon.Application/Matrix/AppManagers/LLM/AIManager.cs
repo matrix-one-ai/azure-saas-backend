@@ -197,7 +197,7 @@ namespace Icon.Matrix.AIManager
 
             var prompt = BuildCharacterPostTokenTweetPrompt(context);
             float temperature = 0.7f;
-            int maxTokens = 500;
+            int maxTokens = 1000;
 
             string rawResponse = "";
 

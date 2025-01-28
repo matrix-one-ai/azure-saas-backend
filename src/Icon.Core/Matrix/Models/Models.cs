@@ -625,6 +625,7 @@ namespace Icon.Matrix.Models
 
     public class CoingeckoAggregatedUpdate : Entity<Guid>
     {
+        public Guid? RaydiumPairId { get; set; }
         public DateTimeOffset CreationTime { get; set; }
 
         public int Pools { get; set; }
@@ -647,14 +648,102 @@ namespace Icon.Matrix.Models
 
         public int M5Buys { get; set; }
         public int M5Sells { get; set; }
+        public int M5Buyers { get; set; }
+        public int M5Sellers { get; set; }
+
         public int M15Buys { get; set; }
         public int M15Sells { get; set; }
+        public int M15Buyers { get; set; }
+        public int M15Sellers { get; set; }
+
         public int M30Buys { get; set; }
         public int M30Sells { get; set; }
+        public int M30Buyers { get; set; }
+        public int M30Sellers { get; set; }
+
         public int H1Buys { get; set; }
         public int H1Sells { get; set; }
+        public int H1Buyers { get; set; }
+        public int H1Sellers { get; set; }
+
         public int H24Buys { get; set; }
         public int H24Sells { get; set; }
+        public int H24Buyers { get; set; }
+        public int H24Sellers { get; set; }
+    }
+
+    public class InfluencerTokenMention : Entity<Guid>
+    {
+        public string Influencer { get; set; }
+        public Guid RaydiumPairId { get; set; }
+        public int TweetCount { get; set; }
+        public float? AvgPump5m { get; set; }
+        public float? AvgPump15m { get; set; }
+        public float? AvgPump30m { get; set; }
+        public float? AvgPump1h { get; set; }
+        public float? AvgPump2h { get; set; }
+        public float? SuccessRate5m { get; set; }
+        public float? SuccessRate15m { get; set; }
+        public float? SuccessRate30m { get; set; }
+        public float? SuccessRate1h { get; set; }
+        public float? SuccessRate2h { get; set; }
+        public int DeathCount { get; set; }
+        public int AliveCount { get; set; }
+
+        // New properties based on the SQL query
+        public float? AvgTotalLiquidityChange5m { get; set; }
+        public float? AvgTotalLiquidityChange15m { get; set; }
+        public float? AvgTotalLiquidityChange30m { get; set; }
+        public float? AvgTotalLiquidityChange1h { get; set; }
+        public float? AvgMarketCapChange5m { get; set; }
+        public float? AvgMarketCapChange15m { get; set; }
+        public float? AvgMarketCapChange30m { get; set; }
+        public float? AvgMarketCapChange1h { get; set; }
+        public float? AvgVolumeM5Ratio { get; set; }
+        public float? AvgVolumeH1Ratio { get; set; }
+        public float? AvgBuyCountIncrease5m { get; set; }
+        public float? AvgSellCountDecrease5m { get; set; }
+        public float? AvgBuyersIncrease5m { get; set; }
+        public float? AvgSellersDecrease5m { get; set; }
+    }
+
+
+
+    public class InfluencerTokenScore : Entity<Guid>
+    {
+        public string Influencer { get; set; }
+        public int TweetCount { get; set; }
+        public int UniqueTokensCount { get; set; }
+        public float? AvgPump5m { get; set; }
+        public float? AvgPump15m { get; set; }
+        public float? AvgPump30m { get; set; }
+        public float? AvgPump1h { get; set; }
+        public float? AvgPump2h { get; set; }
+        public float? SuccessRate5m { get; set; }
+        public float? SuccessRate15m { get; set; }
+        public float? SuccessRate30m { get; set; }
+        public float? SuccessRate1h { get; set; }
+        public float? SuccessRate2h { get; set; }
+        public int DeathCount { get; set; }
+        public int AliveCount { get; set; }
+
+        // New properties based on the SQL query
+        public float? TotalScore { get; set; }
+        public float? TimedWindowScore { get; set; }
+        public float? AvgTotalLiquidityChange5m { get; set; }
+        public float? AvgTotalLiquidityChange15m { get; set; }
+        public float? AvgTotalLiquidityChange30m { get; set; }
+        public float? AvgTotalLiquidityChange1h { get; set; }
+        public float? AvgMarketCapChange5m { get; set; }
+        public float? AvgMarketCapChange15m { get; set; }
+        public float? AvgMarketCapChange30m { get; set; }
+        public float? AvgMarketCapChange1h { get; set; }
+        public float? AvgVolumeM5Ratio { get; set; }
+        public float? AvgVolumeH1Ratio { get; set; }
+        public float? AvgBuyCountIncrease5m { get; set; }
+        public float? AvgSellCountDecrease5m { get; set; }
+        public float? AvgBuyersIncrease5m { get; set; }
+        public float? AvgSellersDecrease5m { get; set; }
     }
 
 

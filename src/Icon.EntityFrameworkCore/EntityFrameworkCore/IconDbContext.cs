@@ -64,6 +64,10 @@ namespace Icon.EntityFrameworkCore
         public virtual DbSet<TwitterImportTweetCount> TwitterImportTweetCounts { get; set; }
 
 
+        public virtual DbSet<InfluencerTokenMention> InfluencerTokenMentions { get; set; }
+        public virtual DbSet<InfluencerTokenScore> InfluencerTokenScores { get; set; }
+
+
         /* Define an IDbSet for each entity of the application */
 
         public virtual DbSet<OpenIddictApplication> Applications { get; }
@@ -230,6 +234,17 @@ namespace Icon.EntityFrameworkCore
             modelBuilder.Entity<TwitterImportTweetCount>()
                 .HasIndex(c => c.CreationTime)
                 .HasDatabaseName("IX_TwitterImportTweetCount_CreationTime");
+
+            modelBuilder.Entity<InfluencerTokenMention>()
+                .HasIndex(m => m.RaydiumPairId)
+                .HasDatabaseName("IX_InfluencerTokenMention_RaydiumPairId");
+            modelBuilder.Entity<InfluencerTokenMention>()
+                .HasIndex(m => m.Influencer)
+                .HasDatabaseName("IX_InfluencerTokenMention_Influencer");
+
+            modelBuilder.Entity<InfluencerTokenScore>()
+                .HasIndex(m => m.Influencer)
+                .HasDatabaseName("IX_InfluencerTokenScore_Influencer");
 
 
             modelBuilder.Entity<BinaryObject>(b => { b.HasIndex(e => new { e.TenantId }); });

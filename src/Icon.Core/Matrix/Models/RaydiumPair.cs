@@ -69,6 +69,7 @@ namespace Icon.Matrix.Models
         public int TwitterCAMostRepliesOnSingleTweet { get; set; }
 
         public int TweetsCAEngagementTweetsImported { get; set; }
+        public int TweetsCAEngagementUniqueAuthors { get; set; }
         public int TweetsCAEngagementTotalLikes { get; set; }
         public int TweetsCAEngagementTotalReplies { get; set; }
         public int TweetsCAEngagementTotalRetweets { get; set; }

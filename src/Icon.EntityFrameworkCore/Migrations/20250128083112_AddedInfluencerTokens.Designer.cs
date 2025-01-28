@@ -4,6 +4,7 @@ using Icon.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
 using Microsoft.EntityFrameworkCore.Metadata;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 
 #nullable disable
@@ -11,9 +12,11 @@ using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 namespace Icon.Migrations
 {
     [DbContext(typeof(IconDbContext))]
-    partial class IconDbContextModelSnapshot : ModelSnapshot
+    [Migration("20250128083112_AddedInfluencerTokens")]
+    partial class AddedInfluencerTokens
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        /// <inheritdoc />
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
@@ -2800,24 +2803,6 @@ namespace Icon.Migrations
                     b.Property<int>("AliveCount")
                         .HasColumnType("int");
 
-                    b.Property<float?>("AvgBuyCountIncrease5m")
-                        .HasColumnType("real");
-
-                    b.Property<float?>("AvgBuyersIncrease5m")
-                        .HasColumnType("real");
-
-                    b.Property<float?>("AvgMarketCapChange15m")
-                        .HasColumnType("real");
-
-                    b.Property<float?>("AvgMarketCapChange1h")
-                        .HasColumnType("real");
-
-                    b.Property<float?>("AvgMarketCapChange30m")
-                        .HasColumnType("real");
-
-                    b.Property<float?>("AvgMarketCapChange5m")
-                        .HasColumnType("real");
-
                     b.Property<float?>("AvgPump15m")
                         .HasColumnType("real");
 
@@ -2831,30 +2816,6 @@ namespace Icon.Migrations
                         .HasColumnType("real");
 
                     b.Property<float?>("AvgPump5m")
-                        .HasColumnType("real");
-
-                    b.Property<float?>("AvgSellCountDecrease5m")
-                        .HasColumnType("real");
-
-                    b.Property<float?>("AvgSellersDecrease5m")
-                        .HasColumnType("real");
-
-                    b.Property<float?>("AvgTotalLiquidityChange15m")
-                        .HasColumnType("real");
-
-                    b.Property<float?>("AvgTotalLiquidityChange1h")
-                        .HasColumnType("real");
-
-                    b.Property<float?>("AvgTotalLiquidityChange30m")
-                        .HasColumnType("real");
-
-                    b.Property<float?>("AvgTotalLiquidityChange5m")
-                        .HasColumnType("real");
-
-                    b.Property<float?>("AvgVolumeH1Ratio")
-                        .HasColumnType("real");
-
-                    b.Property<float?>("AvgVolumeM5Ratio")
                         .HasColumnType("real");
 
                     b.Property<int>("DeathCount")
@@ -2904,24 +2865,6 @@ namespace Icon.Migrations
                     b.Property<int>("AliveCount")
                         .HasColumnType("int");
 
-                    b.Property<float?>("AvgBuyCountIncrease5m")
-                        .HasColumnType("real");
-
-                    b.Property<float?>("AvgBuyersIncrease5m")
-                        .HasColumnType("real");
-
-                    b.Property<float?>("AvgMarketCapChange15m")
-                        .HasColumnType("real");
-
-                    b.Property<float?>("AvgMarketCapChange1h")
-                        .HasColumnType("real");
-
-                    b.Property<float?>("AvgMarketCapChange30m")
-                        .HasColumnType("real");
-
-                    b.Property<float?>("AvgMarketCapChange5m")
-                        .HasColumnType("real");
-
                     b.Property<float?>("AvgPump15m")
                         .HasColumnType("real");
 
@@ -2935,30 +2878,6 @@ namespace Icon.Migrations
                         .HasColumnType("real");
 
                     b.Property<float?>("AvgPump5m")
-                        .HasColumnType("real");
-
-                    b.Property<float?>("AvgSellCountDecrease5m")
-                        .HasColumnType("real");
-
-                    b.Property<float?>("AvgSellersDecrease5m")
-                        .HasColumnType("real");
-
-                    b.Property<float?>("AvgTotalLiquidityChange15m")
-                        .HasColumnType("real");
-
-                    b.Property<float?>("AvgTotalLiquidityChange1h")
-                        .HasColumnType("real");
-
-                    b.Property<float?>("AvgTotalLiquidityChange30m")
-                        .HasColumnType("real");
-
-                    b.Property<float?>("AvgTotalLiquidityChange5m")
-                        .HasColumnType("real");
-
-                    b.Property<float?>("AvgVolumeH1Ratio")
-                        .HasColumnType("real");
-
-                    b.Property<float?>("AvgVolumeM5Ratio")
                         .HasColumnType("real");
 
                     b.Property<int>("DeathCount")

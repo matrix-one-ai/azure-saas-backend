@@ -33,6 +33,7 @@ namespace Icon.Matrix.Twitter
     {
         private readonly ITwitterCommunicationService _twitterCommunicationService;
         private readonly IRepository<TwitterImportTweet, Guid> _importTweetRepository;
+        private readonly IRepository<TwitterImportTweetEngagement, Guid> _importTweetEngagementRepository;
         private readonly IRepository<Character, Guid> _characterRepository;
         private readonly IRepository<CharacterPersona, Guid> _characterPersonaRepository;
         private readonly IRepository<TwitterImportTask, Guid> _twitterImportTaskRepository;
@@ -46,6 +47,7 @@ namespace Icon.Matrix.Twitter
         public TwitterTaskManager(
             ITwitterCommunicationService twitterCommunicationService,
             IRepository<TwitterImportTweet, Guid> importTweetRepository,
+            IRepository<TwitterImportTweetEngagement, Guid> importTweetEngagementRepository,
             IRepository<Character, Guid> characterRepository,
             IRepository<CharacterPersona, Guid> characterPersonaRepository,
             IRepository<TwitterImportTask, Guid> twitterImportTaskRepository,
@@ -58,6 +60,7 @@ namespace Icon.Matrix.Twitter
         {
             _twitterCommunicationService = twitterCommunicationService;
             _importTweetRepository = importTweetRepository;
+            _importTweetEngagementRepository = importTweetEngagementRepository;
             _characterRepository = characterRepository;
             _characterPersonaRepository = characterPersonaRepository;
             _twitterImportTaskRepository = twitterImportTaskRepository;
@@ -202,10 +205,15 @@ namespace Icon.Matrix.Twitter
         public async Task ProcessCharacterPostTweets()
         {
             var characters = await _characterRepository.GetAllListAsync();
+            // var postTypes = new List<string>
+            // {
+            //     "PostCharacterTweetAsync",
+            //     "PostCharacterPersonaWelcomeTweet",
+            //     "PostCharacterTweetRisingSproutAsync"
+            // };
+
             var postTypes = new List<string>
             {
-                "PostCharacterTweetAsync",
-                "PostCharacterPersonaWelcomeTweet",
                 "PostCharacterTweetRisingSproutAsync"
             };
 
@@ -596,7 +604,46 @@ namespace Icon.Matrix.Twitter
                     }
 
                     var lastCoinGeckoAggregate = await _tokenPoolManager.GetCoingeckoAggregatedUpdate((Guid)lastPriceUpdateId);
-                    var promptContext = new AICharacterPostTokenTweetContext(bestRaydiumPair, lastCoinGeckoAggregate);
+
+                    List<TwitterImportTweetEngagement> first10Tweets = null;
+                    List<TwitterImportTweetEngagement> lastTweets = null;
+                    if (bestRaydiumPair.TwitterCAFound)
+                    {
+                        first10Tweets = await _importTweetEngagementRepository
+                            .GetAll()
+                            .Where(x => x.RaydiumPairId == bestRaydiumPair.Id)
+                            .OrderBy(x => x.CreatedAt)
+                            .Take(10)
+                            .ToListAsync();
+
+                        var lastAmountToTake = 20;
+                        var tweetsSentAfterFirst10 = bestRaydiumPair.TweetsCATweetCount - 10;
+
+                        if (tweetsSentAfterFirst10 >= 20)
+                        {
+                            lastAmountToTake = 20;
+                        }
+                        else if (tweetsSentAfterFirst10 < 20 && tweetsSentAfterFirst10 > 0)
+                        {
+                            lastAmountToTake = tweetsSentAfterFirst10;
+                        }
+                        else if (tweetsSentAfterFirst10 <= 0)
+                        {
+                            lastAmountToTake = 0;
+                        }
+
+                        if (lastAmountToTake > 0)
+                        {
+                            lastTweets = await _importTweetEngagementRepository
+                                .GetAll()
+                                .Where(x => x.RaydiumPairId == bestRaydiumPair.Id)
+                                .OrderByDescending(x => x.CreatedAt)
+                                .Take(lastAmountToTake)
+                                .ToListAsync();
+                        }
+                    }
+
+                    var promptContext = new AICharacterPostTokenTweetContext(bestRaydiumPair, lastCoinGeckoAggregate, first10Tweets, lastTweets);
                     var promptResponse = await _aiManager.GeneratePostTokenTweetResponseAsync(promptContext, AIModelType.DirectOpenAI, shouldUseSmartModel: true);
 
                     await _tokenPoolManager.SetTokenPoolTweeted(bestRaydiumPair.Id, promptResponse);

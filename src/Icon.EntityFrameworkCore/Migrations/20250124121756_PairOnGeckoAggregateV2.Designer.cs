@@ -4,6 +4,7 @@ using Icon.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
 using Microsoft.EntityFrameworkCore.Metadata;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 
 #nullable disable
@@ -11,9 +12,11 @@ using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 namespace Icon.Migrations
 {
     [DbContext(typeof(IconDbContext))]
-    partial class IconDbContextModelSnapshot : ModelSnapshot
+    [Migration("20250124121756_PairOnGeckoAggregateV2")]
+    partial class PairOnGeckoAggregateV2
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        /// <inheritdoc />
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
@@ -2789,217 +2792,6 @@ namespace Icon.Migrations
                         .HasDatabaseName("IX_CoingeckoPoolUpdate_RaydiumPair_CreationTime");
 
                     b.ToTable("CoingeckoPoolUpdates");
-                });
-
-            modelBuilder.Entity("Icon.Matrix.Models.InfluencerTokenMention", b =>
-                {
-                    b.Property<Guid>("Id")
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("uniqueidentifier");
-
-                    b.Property<int>("AliveCount")
-                        .HasColumnType("int");
-
-                    b.Property<float?>("AvgBuyCountIncrease5m")
-                        .HasColumnType("real");
-
-                    b.Property<float?>("AvgBuyersIncrease5m")
-                        .HasColumnType("real");
-
-                    b.Property<float?>("AvgMarketCapChange15m")
-                        .HasColumnType("real");
-
-                    b.Property<float?>("AvgMarketCapChange1h")
-                        .HasColumnType("real");
-
-                    b.Property<float?>("AvgMarketCapChange30m")
-                        .HasColumnType("real");
-
-                    b.Property<float?>("AvgMarketCapChange5m")
-                        .HasColumnType("real");
-
-                    b.Property<float?>("AvgPump15m")
-                        .HasColumnType("real");
-
-                    b.Property<float?>("AvgPump1h")
-                        .HasColumnType("real");
-
-                    b.Property<float?>("AvgPump2h")
-                        .HasColumnType("real");
-
-                    b.Property<float?>("AvgPump30m")
-                        .HasColumnType("real");
-
-                    b.Property<float?>("AvgPump5m")
-                        .HasColumnType("real");
-
-                    b.Property<float?>("AvgSellCountDecrease5m")
-                        .HasColumnType("real");
-
-                    b.Property<float?>("AvgSellersDecrease5m")
-                        .HasColumnType("real");
-
-                    b.Property<float?>("AvgTotalLiquidityChange15m")
-                        .HasColumnType("real");
-
-                    b.Property<float?>("AvgTotalLiquidityChange1h")
-                        .HasColumnType("real");
-
-                    b.Property<float?>("AvgTotalLiquidityChange30m")
-                        .HasColumnType("real");
-
-                    b.Property<float?>("AvgTotalLiquidityChange5m")
-                        .HasColumnType("real");
-
-                    b.Property<float?>("AvgVolumeH1Ratio")
-                        .HasColumnType("real");
-
-                    b.Property<float?>("AvgVolumeM5Ratio")
-                        .HasColumnType("real");
-
-                    b.Property<int>("DeathCount")
-                        .HasColumnType("int");
-
-                    b.Property<string>("Influencer")
-                        .HasColumnType("nvarchar(450)");
-
-                    b.Property<Guid>("RaydiumPairId")
-                        .HasColumnType("uniqueidentifier");
-
-                    b.Property<float?>("SuccessRate15m")
-                        .HasColumnType("real");
-
-                    b.Property<float?>("SuccessRate1h")
-                        .HasColumnType("real");
-
-                    b.Property<float?>("SuccessRate2h")
-                        .HasColumnType("real");
-
-                    b.Property<float?>("SuccessRate30m")
-                        .HasColumnType("real");
-
-                    b.Property<float?>("SuccessRate5m")
-                        .HasColumnType("real");
-
-                    b.Property<int>("TweetCount")
-                        .HasColumnType("int");
-
-                    b.HasKey("Id");
-
-                    b.HasIndex("Influencer")
-                        .HasDatabaseName("IX_InfluencerTokenMention_Influencer");
-
-                    b.HasIndex("RaydiumPairId")
-                        .HasDatabaseName("IX_InfluencerTokenMention_RaydiumPairId");
-
-                    b.ToTable("InfluencerTokenMentions");
-                });
-
-            modelBuilder.Entity("Icon.Matrix.Models.InfluencerTokenScore", b =>
-                {
-                    b.Property<Guid>("Id")
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("uniqueidentifier");
-
-                    b.Property<int>("AliveCount")
-                        .HasColumnType("int");
-
-                    b.Property<float?>("AvgBuyCountIncrease5m")
-                        .HasColumnType("real");
-
-                    b.Property<float?>("AvgBuyersIncrease5m")
-                        .HasColumnType("real");
-
-                    b.Property<float?>("AvgMarketCapChange15m")
-                        .HasColumnType("real");
-
-                    b.Property<float?>("AvgMarketCapChange1h")
-                        .HasColumnType("real");
-
-                    b.Property<float?>("AvgMarketCapChange30m")
-                        .HasColumnType("real");
-
-                    b.Property<float?>("AvgMarketCapChange5m")
-                        .HasColumnType("real");
-
-                    b.Property<float?>("AvgPump15m")
-                        .HasColumnType("real");
-
-                    b.Property<float?>("AvgPump1h")
-                        .HasColumnType("real");
-
-                    b.Property<float?>("AvgPump2h")
-                        .HasColumnType("real");
-
-                    b.Property<float?>("AvgPump30m")
-                        .HasColumnType("real");
-
-                    b.Property<float?>("AvgPump5m")
-                        .HasColumnType("real");
-
-                    b.Property<float?>("AvgSellCountDecrease5m")
-                        .HasColumnType("real");
-
-                    b.Property<float?>("AvgSellersDecrease5m")
-                        .HasColumnType("real");
-
-                    b.Property<float?>("AvgTotalLiquidityChange15m")
-                        .HasColumnType("real");
-
-                    b.Property<float?>("AvgTotalLiquidityChange1h")
-                        .HasColumnType("real");
-
-                    b.Property<float?>("AvgTotalLiquidityChange30m")
-                        .HasColumnType("real");
-
-                    b.Property<float?>("AvgTotalLiquidityChange5m")
-                        .HasColumnType("real");
-
-                    b.Property<float?>("AvgVolumeH1Ratio")
-                        .HasColumnType("real");
-
-                    b.Property<float?>("AvgVolumeM5Ratio")
-                        .HasColumnType("real");
-
-                    b.Property<int>("DeathCount")
-                        .HasColumnType("int");
-
-                    b.Property<string>("Influencer")
-                        .HasColumnType("nvarchar(450)");
-
-                    b.Property<float?>("SuccessRate15m")
-                        .HasColumnType("real");
-
-                    b.Property<float?>("SuccessRate1h")
-                        .HasColumnType("real");
-
-                    b.Property<float?>("SuccessRate2h")
-                        .HasColumnType("real");
-
-                    b.Property<float?>("SuccessRate30m")
-                        .HasColumnType("real");
-
-                    b.Property<float?>("SuccessRate5m")
-                        .HasColumnType("real");
-
-                    b.Property<float?>("TimedWindowScore")
-                        .HasColumnType("real");
-
-                    b.Property<float?>("TotalScore")
-                        .HasColumnType("real");
-
-                    b.Property<int>("TweetCount")
-                        .HasColumnType("int");
-
-                    b.Property<int>("UniqueTokensCount")
-                        .HasColumnType("int");
-
-                    b.HasKey("Id");
-
-                    b.HasIndex("Influencer")
-                        .HasDatabaseName("IX_InfluencerTokenScore_Influencer");
-
-                    b.ToTable("InfluencerTokenScores");
                 });
 
             modelBuilder.Entity("Icon.Matrix.Models.Memory", b =>
