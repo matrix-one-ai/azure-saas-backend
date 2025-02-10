@@ -216,7 +216,9 @@ Dexscreener: [TokenToTweetAbout.DexscreenerUrl]
                 PlantFinalPrediction = raydiumPair.PlantFinalPrediction,
 
                 // Last update
-                AggregatedPoolUpdate = coingeckoPoolUpdate
+                AggregatedPoolUpdate = coingeckoPoolUpdate,
+                First10Tweets = first10Tweets,
+                Last20Tweets = last20Tweets
             };
         }
 

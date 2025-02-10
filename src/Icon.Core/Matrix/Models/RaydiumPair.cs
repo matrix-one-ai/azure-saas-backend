@@ -108,6 +108,30 @@ namespace Icon.Matrix.Models
         public float? EngagementCorrelationScore { get; set; }
         public string PlantFinalSummary { get; set; }
         public string PlantFinalPrediction { get; set; }
+
+        public string TokenHolderData { get; set; }
+
+
+        public bool EngagementBuyRecommendation { get; set; }
+        public DateTimeOffset? EngagementRecommendedSellByTime { get; set; }
+
+
+        public DateTimeOffset? DummyBuyTime { get; set; }
+        public float DummyBuyAmount { get; set; }
+        public float DummyBuyQuantity { get; set; }
+        public float DummyBuyPrice { get; set; }
+
+        public DateTimeOffset? DummySellTime { get; set; }
+        public float DummySellAmount { get; set; }
+        public float DummySellQuantity { get; set; }
+        public float DummySellPrice { get; set; }
+
+    }
+
+    public class TokenHolderData
+    {
+        public string[] TopAddresses { get; set; }
+        public float[] HolderPercentages { get; set; }
     }
 
 

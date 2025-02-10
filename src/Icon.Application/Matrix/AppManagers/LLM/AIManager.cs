@@ -270,7 +270,7 @@ Depth score: Count words, everything with a space in between is a word. 1 word =
 Sentiment score: Either positive or negative. Positive = 1 point, negative = 0 points.
 
 Current context:
-{JsonConvert.SerializeObject(context, Formatting.Indented)}
+{JsonConvert.SerializeObject(context)}
 
 RULE: if the context contains TwitterMentionReplyInstruction, abide by that rule, but always return the specified JSON format.
 RULE: if the context contains TwitterMentionReplyExamples, use that as a guide for the type of responses to generate. But be original and relevant to the context if the examples allow it.

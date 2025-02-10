@@ -1,4 +1,4 @@
-﻿using System;
+﻿﻿using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
@@ -19,6 +19,8 @@ using Tweetinvi.Core.Iterators;
 using System.Linq.Dynamic.Core.Tokenizer;
 using System.Runtime.InteropServices;
 using System.Transactions;
+using Icon.Matrix.Solscan;
+using Newtonsoft.Json;
 
 namespace Icon.Matrix.TokenDiscovery
 {
@@ -30,6 +32,7 @@ namespace Icon.Matrix.TokenDiscovery
     public class TokenDiscoveryManager : IconServiceBase, ITokenDiscoveryManager
     {
         private readonly ICoingeckoService _coingeckoService;
+        private readonly ISolscanService _solscanService;
         private readonly ITwitterAPICommunicationService _twitterAPICommunicationService;
 
         private readonly IRepository<CoingeckoPoolUpdate, Guid> _coingeckoPoolUpdateRepository;
@@ -43,6 +46,7 @@ namespace Icon.Matrix.TokenDiscovery
         private readonly IMatrixBulkRepository<RaydiumPair> _raydiumPairBulkRepository;
         private readonly IMatrixBulkRepository<TwitterImportTweetEngagement> _twitterImportTweetEngagementBulkRepository;
         private readonly IMatrixBulkRepository<TwitterImportTweetCount> _twitterImportTweetCountBulkRepository;
+
 
         private readonly IUnitOfWorkManager _unitOfWorkManager;
         private readonly IConfigurationRoot _configuration;
@@ -103,6 +107,7 @@ namespace Icon.Matrix.TokenDiscovery
 
         public TokenDiscoveryManager(
             ICoingeckoService coingeckoService,
+            ISolscanService solscanService,
             ITwitterAPICommunicationService twitterAPICommunicationService,
 
             IRepository<CoingeckoPoolUpdate, Guid> coingeckoPoolUpdateRepository,
@@ -122,6 +127,7 @@ namespace Icon.Matrix.TokenDiscovery
         )
         {
             _coingeckoService = coingeckoService;
+            _solscanService = solscanService;
             _twitterAPICommunicationService = twitterAPICommunicationService;
 
             _coingeckoPoolUpdateRepository = coingeckoPoolUpdateRepository;
@@ -209,6 +215,8 @@ namespace Icon.Matrix.TokenDiscovery
                 if (pair.DiscoveryStageName != TokenStageDefinitions.Stages.Death)
                 {
                     await UpdatePriceForPair(pair, TokenStageDefinitions.Definitions[TokenStageDefinitions.Stages.PriceTracking]);
+                    //await UpdateTokenHoldersAsync(pair);
+
                     CheckAndPerformStageTransition(pair);
                 }
 
@@ -328,6 +336,62 @@ namespace Icon.Matrix.TokenDiscovery
         }
 
         #endregion
+
+
+        private async Task UpdateTokenHoldersAsync(RaydiumPair pair)
+        {
+            try
+            {
+                if (string.IsNullOrEmpty(pair.BaseTokenAccount))
+                    return;
+
+                var holdersResponse = await _solscanService.GetTokenHoldersAsync(pair.BaseTokenAccount);
+                if (holdersResponse == null || !holdersResponse.Data.Any())
+                    return;
+
+                var holders = holdersResponse.Data
+                    .Select(h => new { h.Address, h.Amount })
+                    .Where(h => h.Address != null && h.Amount != null)
+                    .ToList();
+
+                if (!holders.Any()) return;
+
+                decimal? totalSupply = holders.Sum(h => decimal.Parse(h.Amount));
+                if (totalSupply == 0)
+                    throw new DivideByZeroException("Total token supply is zero.");
+
+                var topHolders = holders
+                    .OrderByDescending(h => decimal.Parse(h.Amount))
+                    .Take(5)
+                    .ToList();
+
+                var holderPercentages = new List<(string Address, float Percentage)>();
+                foreach (var holder in topHolders)
+                {
+                    decimal amount = decimal.Parse(holder.Amount);
+                    var percentage = (float)(amount / totalSupply * 100);
+                    holderPercentages.Add((holder.Address, (float)Math.Round(percentage, 2)));
+                }
+
+                // Serialize the data into JSON
+                var tokenHolderData = new
+                {
+                    TopAddresses = topHolders.Select(h => h.Address).ToArray(),
+                    HolderPercentages = holderPercentages.Select(h => h.Percentage).ToArray()
+                };
+
+                pair.TokenHolderData = JsonConvert.SerializeObject(tokenHolderData);
+
+                Logger.Info($"Updated token holders for pair: {pair.Id}");
+            }
+            catch (Exception ex)
+            {
+                Logger.Error($"Error updating token holders for pair {pair.Id}", ex);
+            }
+        }
+
+
+
 
         #region Price Update / Aggregation
 

@@ -155,7 +155,7 @@ namespace Icon.Web.Startup
 
             if (_hostingEnvironment.IsProduction())
             {
-                services.AddHostedService<RaydiumNewPairHostedService>();
+                //services.AddHostedService<RaydiumNewPairHostedService>();
             }
 
             if (WebConsts.GraphQL.Enabled)

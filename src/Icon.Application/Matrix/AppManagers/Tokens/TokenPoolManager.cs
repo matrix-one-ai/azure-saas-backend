@@ -21,6 +21,7 @@ namespace Icon.Matrix.TokenPools
     public interface ITokenPoolManager : IDomainService
     {
         Task<RaydiumPair> GetBestPerformingPair();
+        Task<RaydiumPair> GetLatestRaydiumPair();
         Task<List<TwitterImportTweetEngagement>> GetTweetEngagements(Guid raydiumPairId);
         Task<List<TwitterImportTweetCount>> GetTweetCounts(Guid raydiumPairId);
         Task<List<RaydiumPair>> GetLatestRaydiumpairs();
@@ -82,13 +83,27 @@ namespace Icon.Matrix.TokenPools
             _configuration = appConfigurationAccessor.Configuration;
         }
 
+        public async Task<RaydiumPair> GetLatestRaydiumPair()
+        {
+            return await _raydiumPairRepository
+                .GetAll()
+                .OrderByDescending(x => x.CreationTime)
+                .FirstOrDefaultAsync();
+        }
+
         public async Task<RaydiumPair> GetBestPerformingPair()
         {
             var activeStages = TokenStageDefinitions.ActiveStages;
 
             var bestPair = await _raydiumPairRepository
                 .GetAll()
-                .Where(x => activeStages.Contains(x.DiscoveryStageName) && !x.TweetSent)
+                .Where(x =>
+                    activeStages.Contains(x.DiscoveryStageName)
+                    && x.TwitterCAFound
+                    && !x.TweetSent
+                    && x.TotalLiquidityUsd > 49000
+                    && x.TweetsCATweetCount >= 10
+                    && x.TweetsCAEngagementTotalLikes >= 10)
                 .OrderByDescending(x => x.CombinedMetricScore)
                 .FirstOrDefaultAsync();
 

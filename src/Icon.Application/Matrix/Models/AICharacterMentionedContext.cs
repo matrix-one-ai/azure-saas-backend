@@ -89,5 +89,15 @@ namespace Icon.Matrix.AIManager.CharacterMentioned
         public string TweetContent { get; set; }
         public DateTimeOffset? TweetDate { get; set; }
         public bool IsTweetByCharacter { get; set; }
+
+
+        public int Likes { get; set; }
+        public int Replies { get; set; }
+        public int Retweets { get; set; }
+        public int Views { get; set; }
+
+
+
+
     }
 }

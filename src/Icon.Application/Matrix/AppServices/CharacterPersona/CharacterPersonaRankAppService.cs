@@ -21,7 +21,9 @@ using Abp.Runtime.Caching;
 
 namespace Icon.Matrix.CharacterPersonas
 {
-    [AbpAuthorize]
+    //[AbpAuthorize]
+    [ApiKeyAuth]
+    [AbpAllowAnonymous]
     public class CharacterPersonaRankAppService : IconAppServiceBase
     {
 

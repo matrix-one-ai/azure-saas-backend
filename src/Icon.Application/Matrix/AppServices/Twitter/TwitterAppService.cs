@@ -26,7 +26,9 @@ using Icon.Matrix.Portal.Dto;
 
 namespace Icon.Matrix
 {
-    [AbpAuthorize]
+    //[AbpAuthorize]
+    [ApiKeyAuth]
+    [AbpAllowAnonymous]
     public class TwitterAppService : IconAppServiceBase
     {
         private readonly IRepository<Character, Guid> _characterRepository;

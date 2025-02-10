@@ -205,17 +205,17 @@ namespace Icon.Matrix.Twitter
         public async Task ProcessCharacterPostTweets()
         {
             var characters = await _characterRepository.GetAllListAsync();
-            // var postTypes = new List<string>
-            // {
-            //     "PostCharacterTweetAsync",
-            //     "PostCharacterPersonaWelcomeTweet",
-            //     "PostCharacterTweetRisingSproutAsync"
-            // };
-
             var postTypes = new List<string>
             {
+                "PostCharacterTweetAsync",
+                "PostCharacterPersonaWelcomeTweet",
                 "PostCharacterTweetRisingSproutAsync"
             };
+
+            // var postTypes = new List<string>
+            // {
+            //     "PostCharacterTweetRisingSproutAsync"
+            // };
 
             foreach (var character in characters)
             {
@@ -604,6 +604,10 @@ namespace Icon.Matrix.Twitter
                     }
 
                     var lastCoinGeckoAggregate = await _tokenPoolManager.GetCoingeckoAggregatedUpdate((Guid)lastPriceUpdateId);
+
+                    if (lastCoinGeckoAggregate.VolumeH1 < 50000) return;
+                    if (lastCoinGeckoAggregate.PriceChangeM5 < 0) return;
+
 
                     List<TwitterImportTweetEngagement> first10Tweets = null;
                     List<TwitterImportTweetEngagement> lastTweets = null;

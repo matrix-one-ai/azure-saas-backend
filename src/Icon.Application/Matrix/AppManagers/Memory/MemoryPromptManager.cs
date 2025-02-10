@@ -330,7 +330,7 @@ namespace Icon.Matrix
                             TotalSentimentScore = userStats.TotalSentimentScore,
                             TotalQualityScore = userStats.TotalQualityScore,
 
-                            TotalScore = userStats.TotalScore,
+                            TotalScore = userStats.TotalScoreTimeDecayed,
                             Rank = userStats.Rank,
 
                             TotalMentionsCount = userStats.TotalMentionsCount,
@@ -344,6 +344,10 @@ namespace Icon.Matrix
                         TweetUserName = personaPlatformId,
                         TweetContent = memory.MemoryContent,
                         TweetDate = memory.PlatformInteractionDate,
+                        Likes = memory.MemoryStatsTwitter?.Likes ?? 0,
+                        Retweets = memory.MemoryStatsTwitter?.Retweets ?? 0,
+                        Replies = memory.MemoryStatsTwitter?.Replies ?? 0,
+                        Views = memory.MemoryStatsTwitter?.Views ?? 0,
                         IsTweetByCharacter = false
                     },
                     ConversationTimeLine = new ConversationTimeLineDto
